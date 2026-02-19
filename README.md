@@ -1,15 +1,28 @@
 # IELTS Speaking Practice System
 
-這是一個專為 IELTS 口說練習設計的個人 Web 應用程式，整合了錄音、Whisper 語音轉寫與即時語音分析功能。
+這是一個專為 IELTS 口說練習設計的個人 Web 應用程式，整合了錄音、Whisper 語音轉寫、即時語音分析與 IELTS 分數估算功能。
 
 ## 功能
 
-- **Part 1 練習**：貼上 Markdown 格式題目（# Qx-y: / # Ax-y:），每題 45 秒倒數並自動錄音。支援手動輸入或從題庫隨機抽題。
-- **Part 2/3 練習**：輸入題目卡內容，提供 2 分鐘筆記時間與 2 分鐘獨白錄音。
+- **Part 1 練習**：自動從 `speaking_p1.md` 載入題目，隨機抽取 5 題未練習過的題目，每題 45 秒倒數並自動錄音。支援手動輸入或從題庫隨機抽題。
+- **Part 2/3 練習**：自動從 `speaking_p2_with_answers.md` 載入題目卡，隨機抽取 1 張未練習過的題目卡，提供 2 分鐘筆記時間與 2 分鐘獨白錄音。
+- **已抽題追蹤**：Part 1 與 Part 2 分別記錄已練習過的題目（`drawn_p1.json` / `drawn_p2.json`），避免重複抽取。全部練完可重置。
 - **Whisper ASR**：採用本地 faster-whisper (base 模型) 進行離線轉寫，無需 API key。
 - **語音分析**：每段錄音自動計算 WPM、填充詞、詞彙多樣性 (TTR)、篇章標記與複雜句型。
-- **結果匯出**：一鍵複製 Markdown 格式結果（含轉寫、範例答案與分析指標），可直接貼入 Claude 或 ChatGPT 進行深度分析。
+- **IELTS 分數估算**：根據轉寫文本自動估算 Fluency & Coherence、Lexical Resource、Grammatical Range 與 Overall Band Score。
+- **範例答案對照**：Part 1 與 Part 2 結果頁面皆顯示範例答案，方便與自己的回答進行比較。
+- **結果匯出**：一鍵複製 Markdown 格式結果（含轉寫、範例答案、分析指標與分數估算），可直接貼入 Claude 或 ChatGPT 進行深度分析。
 - **題庫管理**：分開管理 Part 1 與 Part 2 題目，支援隨機抽題。
+
+## 題庫內容
+
+| 檔案 | 說明 | 數量 |
+| :--- | :--- | :--- |
+| `speaking_p1.md` | Part 1 題目與範例答案 | 31 個主題，約 120+ 題 |
+| `speaking_p2.md` | Part 2 題目卡（純題目） | 51 張題目卡 |
+| `speaking_p2_with_answers.md` | Part 2 題目卡 + Band 7 範例答案 | 51 組 Q/A |
+| `speaking_p3.md` | Part 3 討論題（每張 Part 2 題目卡對應 3 題） | 153 題 |
+| `speaking_p2p3_data/` | Part 2 原始題目與套題策略檔 | 來源資料 |
 
 ## 安裝
 
@@ -48,36 +61,41 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 ### Part 1 練習流程
 
 1. 點選 **Part 1 Practice**。
-2. 在文字框貼上題目，格式範例如下：
+2. 系統自動從 `speaking_p1.md` 載入題目，隨機抽取 5 題尚未練習過的題目。
+3. 若不滿意當前抽題，可點選 **Reshuffle** 重新抽取。
+4. 亦可手動貼上題目，格式範例如下：
    ```markdown
    # Q1-1:
    How do you usually spend your day at work?
-   
+
    # A1-1:
    Usually, I spend my day at work working diligently...
-   
+
    # Q1-2:
    Do you find it easy to organize your time at work?
    ```
    - `# Qx-y:` 為題目內容。
    - `# Ax-y:` 為範例答案（選填）。
    - `x` 為主題編號，`y` 為該主題下的題號。
-3. 下方會即時預覽解析出的題目數量，亦可點選 **Random from Bank** 從題庫隨機抽取 5 題。
-4. 點選 **Start Practice** 開始，每題有 45 秒倒數並自動錄音，時間到會自動跳轉下一題。
-5. 練習中可按 **Next** 提前跳至下一題。
-6. 全部完成後，系統將自動進行轉寫與分析。
+5. 點選 **Start Practice** 開始，每題有 45 秒倒數並自動錄音，時間到會自動跳轉下一題。
+6. 練習中可按 **Next** 提前跳至下一題。
+7. 全部完成後，系統將自動進行轉寫與分析，並將已抽題目記錄至 `drawn_p1.json`。
+8. 當所有題目皆已練習過，系統會提示並提供 **Reset History** 按鈕重置紀錄。
 
 ### Part 2/3 練習流程
 
 1. 點選 **Part 2 & 3 Practice**。
-2. 貼上題目卡內容。
-3. 點選 **Start**：進入 2 分鐘筆記時間（可直接在頁面打字），隨後自動切換至 2 分鐘獨白錄音。
-4. 錄音結束後自動進行轉寫與分析。
+2. 系統自動從 `speaking_p2_with_answers.md` 載入題目卡，隨機抽取 1 張尚未練習過的題目卡。
+3. 若不滿意當前題目，可點選 **Reshuffle** 重新抽取。
+4. 亦可手動貼上題目卡內容。
+5. 點選 **Start**：進入 2 分鐘筆記時間（可直接在頁面打字），隨後自動切換至 2 分鐘獨白錄音。
+6. 錄音結束後自動進行轉寫與分析，並將已抽題目記錄至 `drawn_p2.json`。
+7. 當所有題目卡皆已練習過，系統會提示並提供 **Reset History** 按鈕重置紀錄。
 
 ### 結果頁面
 
-- 顯示每題的逐字稿、錄音回放、語音分析指標與範例答案。
-- 點選 **Copy for Claude Analysis** 即可複製 Markdown 格式內容，貼進 Claude 取得詳細評分建議。
+- 顯示每題的逐字稿、錄音回放、語音分析指標、IELTS 分數估算與範例答案。
+- 點選 **Copy for Claude Analysis** 即可複製 Markdown 格式內容（含範例答案對照），貼進 Claude 取得詳細評分建議。
 
 ### 題庫管理
 
@@ -98,22 +116,45 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 | Complex Structures | 複雜句型標記 (although, because, which 等) | 越多代表文法範圍越廣 |
 | Repeated Words | 連續重複的詞 | 應為 0 |
 
+## IELTS 分數估算說明
+
+系統根據轉寫文本自動估算以下四項分數（4.0–8.0，以 0.5 為級距）：
+
+| 項目 | 評估依據 |
+| :--- | :--- |
+| Fluency & Coherence (FC) | 語速 (WPM)、填充詞頻率、篇章標記使用量 |
+| Lexical Resource (LR) | 詞彙多樣性 (TTR)、平均詞長、長詞數量 |
+| Grammatical Range (GRA) | 複雜句型標記數、平均句長、重複詞扣分 |
+| Overall | 三項平均，四捨五入至 0.5 |
+
+*注意：此分數僅為基於文本的粗略估算，不包含發音評分。*
+
 ## 專案結構
 
 ```text
 IELTS_record_ASR/
-├── app.py              # FastAPI 後端 + Whisper ASR + 語音分析
+├── app.py                          # FastAPI 後端 + Whisper ASR + 語音分析 + 分數估算
 ├── requirements.txt
-├── questions.json       # 題庫資料
-├── recordings/          # 錄音檔 (按 session 分資料夾)
-├── sessions/            # 練習記錄 JSON
+├── README.md
+├── speaking_p1.md                  # Part 1 題目與範例答案
+├── speaking_p2.md                  # Part 2 題目卡（純題目）
+├── speaking_p2_with_answers.md     # Part 2 題目卡 + Band 7 範例答案
+├── speaking_p3.md                  # Part 3 討論題（每張 Part 2 卡對應 3 題）
+├── speaking_p2p3_data/             # Part 2 原始題目與套題策略
+│   ├── speaking_p2_q.md
+│   └── speaking_p2_core.md
+├── questions.json                  # 題庫資料
+├── drawn_p1.json                   # Part 1 已抽題紀錄
+├── drawn_p2.json                   # Part 2 已抽題紀錄
+├── recordings/                     # 錄音檔（按 session 分資料夾）
+├── sessions/                       # 練習記錄 JSON（含轉寫、分析、分數）
 └── static/
-    ├── index.html       # SPA 主頁面
-    ├── css/style.css    # 暗色主題樣式
+    ├── index.html                  # SPA 主頁面
+    ├── css/style.css               # 暗色主題樣式
     └── js/
-        ├── app.js       # 主邏輯 + Markdown 解析
-        ├── recorder.js  # MediaRecorder 封裝
-        └── timer.js     # SVG 圓環計時器
+        ├── app.js                  # 主邏輯 + Markdown 解析 + 題目自動載入
+        ├── recorder.js             # MediaRecorder 封裝
+        └── timer.js                # SVG 圓環計時器
 ```
 
 ## 注意事項
