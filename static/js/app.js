@@ -1879,10 +1879,22 @@ async function viewSessionDetail(sessionId) {
       const p2TopicId = _p2('topic_id', '');
       if (p2TopicId) {
         p2TopicNum = p2TopicId.split('-')[0];
-      } else if (_allFileParsedPart2.length > 0) {
-        const topicStart = p2Topic.split('\n')[0].trim().toLowerCase();
-        const matched = _allFileParsedPart2.find((p) => p.question.split('\n')[0].trim().toLowerCase() === topicStart);
-        if (matched) p2TopicNum = matched.id.split('-')[0];
+      } else {
+        if (_allFileParsedPart2.length === 0) {
+          try {
+            const p2FileRes = await fetch('/api/load-file?part=part2');
+            if (p2FileRes.ok) {
+              const p2FileData = await p2FileRes.json();
+              _allFileParsedPart2 = parseQuestionsMarkdown(p2FileData.content);
+              _allFileParsedPart2.forEach((p) => { if (p.answer) _fileAnswersPart2[p.id] = p.answer; });
+            }
+          } catch {}
+        }
+        if (_allFileParsedPart2.length > 0) {
+          const topicStart = p2Topic.split('\n')[0].trim().toLowerCase();
+          const matched = _allFileParsedPart2.find((p) => p.question.split('\n')[0].trim().toLowerCase() === topicStart);
+          if (matched) p2TopicNum = matched.id.split('-')[0];
+        }
       }
       if (p2TopicNum) {
         try {
