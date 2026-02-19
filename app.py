@@ -17,6 +17,16 @@ RECORDINGS_DIR = BASE_DIR / "recordings"
 SESSIONS_DIR = BASE_DIR / "sessions"
 QUESTIONS_FILE = BASE_DIR / "questions.json"
 DRAWN_P1_FILE = BASE_DIR / "drawn_p1.json"
+DRAWN_P2_FILE = BASE_DIR / "drawn_p2.json"
+
+_PART_FILES = {
+    "part1": BASE_DIR / "speaking_p1.md",
+    "part2": BASE_DIR / "speaking_p2_with_answers.md",
+}
+_DRAWN_FILES = {
+    "p1": DRAWN_P1_FILE,
+    "p2": DRAWN_P2_FILE,
+}
 
 RECORDINGS_DIR.mkdir(exist_ok=True)
 SESSIONS_DIR.mkdir(exist_ok=True)
@@ -250,47 +260,54 @@ async def random_questions(part: str = "part1", count: int = 5):
 
 
 @app.get("/api/load-file")
-async def load_file():
-    path = BASE_DIR / "speaking_p1.md"
+async def load_file(part: str = "part1"):
+    path = _PART_FILES.get(part)
+    if not path:
+        raise HTTPException(400, f"Unknown part: {part}")
     if not path.exists():
-        raise HTTPException(404, "speaking_p1.md not found")
+        raise HTTPException(404, f"{path.name} not found")
     return {"content": path.read_text("utf-8")}
 
 
 # ---------------------------------------------------------------------------
-# API – Drawn history (Part 1)
+# API – Drawn history (Part 1 & Part 2)
 # ---------------------------------------------------------------------------
-def _load_drawn() -> list[str]:
-    if DRAWN_P1_FILE.exists():
-        data = json.loads(DRAWN_P1_FILE.read_text("utf-8"))
+def _drawn_file(part: str) -> Path:
+    return _DRAWN_FILES.get(part, DRAWN_P1_FILE)
+
+
+def _load_drawn(part: str = "p1") -> list[str]:
+    f = _drawn_file(part)
+    if f.exists():
+        data = json.loads(f.read_text("utf-8"))
         return data.get("drawn_ids", [])
     return []
 
 
-def _save_drawn(ids: list[str]) -> None:
-    DRAWN_P1_FILE.write_text(
+def _save_drawn(ids: list[str], part: str = "p1") -> None:
+    _drawn_file(part).write_text(
         json.dumps({"drawn_ids": ids}, ensure_ascii=False, indent=2), "utf-8"
     )
 
 
 @app.get("/api/drawn-history")
-async def get_drawn_history():
-    return {"drawn_ids": _load_drawn()}
+async def get_drawn_history(part: str = "p1"):
+    return {"drawn_ids": _load_drawn(part)}
 
 
 @app.post("/api/drawn-history")
-async def add_drawn_history(request: Request):
+async def add_drawn_history(request: Request, part: str = "p1"):
     data = await request.json()
     new_ids = data.get("ids", [])
-    existing = _load_drawn()
+    existing = _load_drawn(part)
     merged = list(dict.fromkeys(existing + new_ids))  # deduplicate, preserve order
-    _save_drawn(merged)
+    _save_drawn(merged, part)
     return {"drawn_ids": merged}
 
 
 @app.delete("/api/drawn-history")
-async def reset_drawn_history():
-    _save_drawn([])
+async def reset_drawn_history(part: str = "p1"):
+    _save_drawn([], part)
     return {"drawn_ids": []}
 
 
