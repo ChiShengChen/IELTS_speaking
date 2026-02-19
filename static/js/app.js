@@ -131,6 +131,7 @@ document.addEventListener('click', (e) => {
     'view-session':       () => { viewSessionDetail(btn.dataset.sessionId); },
     'back-to-history':    loadHistory,
     'download-session-pdf': () => { window.open(`/api/sessions/${btn.dataset.sessionId}/pdf`); },
+    'copy-history-detail': copyHistoryDetail,
   };
 
   if (handlers[action]) handlers[action]();
@@ -1800,18 +1801,28 @@ async function viewSessionDetail(sessionId) {
       <span class="history-date">${date}</span>
     </div>`;
 
-    const legend = `<div class="hl-legend">
+    html += `<div class="hl-legend">
       <span class="hl-leg-filler">Fillers</span>
       <span class="hl-leg-discourse">Discourse markers</span>
       <span class="hl-leg-complex">Complex structures</span>
     </div>`;
-    html += legend;
 
-    // --- Part 1 ---
-    const p1Qs = s.type === 'mock' ? (s.part1?.questions || []) : s.type === 'part1' ? (s.questions || []) : [];
-    const p1Trans = s.type === 'mock' ? (s.part1?.transcripts || []) : s.type === 'part1' ? (s.transcripts || []) : [];
-    const p1Analyses = s.type === 'mock' ? (s.part1?.analyses || []) : s.type === 'part1' ? (s.analyses || []) : [];
-    const p1Samples = s.type === 'mock' ? (s.part1?.sample_answers || []) : s.type === 'part1' ? (s.sample_answers || []) : [];
+    const _p = (field) => {
+      if (s.type === 'mock') return s.part1?.[field] || [];
+      if (s.type === 'part1') return s[field] || [];
+      return [];
+    };
+    const _p2 = (field, fallback) => {
+      if (s.type === 'mock') return s.part2?.[field] ?? fallback;
+      if (s.type === 'part2') return s[field] ?? fallback;
+      return fallback;
+    };
+
+    const p1Qs = _p('questions');
+    const p1Trans = _p('transcripts');
+    const p1Analyses = _p('analyses');
+    const p1Samples = _p('sample_answers');
+    const p1Durations = _p('durations');
 
     if (p1Qs.length > 0) {
       if (s.type === 'mock') html += '<h4 class="detail-section-title">Part 1</h4>';
@@ -1819,6 +1830,7 @@ async function viewSessionDetail(sessionId) {
         const transcript = p1Trans[i] || '—';
         const analysis = p1Analyses[i] || {};
         const sample = p1Samples[i] || '';
+        const dur = p1Durations[i] || 0;
         const sampleHtml = sample
           ? `<div class="sample-answer"><div class="sample-label">Sample Answer</div><div class="sample-text">${escapeHtml(sample)}</div></div>`
           : '';
@@ -1826,20 +1838,20 @@ async function viewSessionDetail(sessionId) {
         html += `<div class="result-card">
           <h4>Q${i + 1}</h4>
           <div class="question-text">${escapeHtml(q)}</div>
-          <div class="transcript-text">${highlightTranscript(typeof transcript === 'string' ? transcript : transcript?.transcript || '—')}</div>
-          <div class="duration-text">Duration: ${typeof transcript === 'object' ? transcript?.duration || 0 : 0}s</div>
+          <div class="transcript-text">${highlightTranscript(transcript)}</div>
+          <div class="duration-text">Duration: ${dur}s</div>
           ${buildAnalysisHtml(analysis)}
           ${sampleHtml}
         </div>`;
       });
     }
 
-    // --- Part 2 ---
-    const p2Topic = s.type === 'mock' ? (s.part2?.topic || '') : s.type === 'part2' ? (s.topic || '') : '';
-    const p2Transcript = s.type === 'mock' ? (s.part2?.transcript || '') : s.type === 'part2' ? (s.transcript || '') : '';
-    const p2Analysis = s.type === 'mock' ? (s.part2?.analysis || {}) : s.type === 'part2' ? (s.analysis || {}) : {};
-    const p2Sample = s.type === 'mock' ? (s.part2?.sample_answer || '') : s.type === 'part2' ? (s.sample_answer || '') : '';
-    const p2Notes = s.type === 'mock' ? (s.part2?.notes || '') : s.type === 'part2' ? (s.notes || '') : '';
+    const p2Topic = _p2('topic', '');
+    const p2Transcript = _p2('transcript', '');
+    const p2Analysis = _p2('analysis', {});
+    const p2Sample = _p2('sample_answer', '');
+    const p2Notes = _p2('notes', '');
+    const p2Duration = _p2('duration', 0);
 
     if (p2Topic) {
       if (s.type === 'mock') html += '<h4 class="detail-section-title">Part 2</h4>';
@@ -1860,16 +1872,17 @@ async function viewSessionDetail(sessionId) {
         : '';
 
       const p2Coverage = checkBulletCoverage(p2Topic, p2Transcript);
+      const coverageHtml = buildCoverageHtml(p2Coverage);
 
       let vocabHtml = '';
       let p2TopicNum = '';
-      const p2TopicId = s.type === 'mock' ? (s.part2?.topic_id || '') : (s.topic_id || '');
+      const p2TopicId = _p2('topic_id', '');
       if (p2TopicId) {
         p2TopicNum = p2TopicId.split('-')[0];
       } else if (_allFileParsedPart2.length > 0) {
         const topicStart = p2Topic.split('\n')[0].trim().toLowerCase();
-        const match = _allFileParsedPart2.find((p) => p.question.split('\n')[0].trim().toLowerCase() === topicStart);
-        if (match) p2TopicNum = match.id.split('-')[0];
+        const matched = _allFileParsedPart2.find((p) => p.question.split('\n')[0].trim().toLowerCase() === topicStart);
+        if (matched) p2TopicNum = matched.id.split('-')[0];
       }
       if (p2TopicNum) {
         try {
@@ -1892,15 +1905,14 @@ async function viewSessionDetail(sessionId) {
       html += `<div class="result-card">
         <h4>Part 2 — Your Response</h4>
         <div class="transcript-text">${highlightTranscript(p2Transcript || '—')}</div>
-        <div class="duration-text">Duration: ${s.type === 'mock' ? (s.part2?.duration || 0) : (s.duration || 0)}s</div>
+        <div class="duration-text">Duration: ${p2Duration}s</div>
         ${buildAnalysisHtml(p2Analysis)}
-        ${buildCoverageHtml(p2Coverage)}
+        ${coverageHtml}
         ${vocabHtml}
         ${p2SampleHtml}
       </div>`;
     }
 
-    // --- Part 3 ---
     const p3 = s.part3 || {};
     const p3Qs = p3.questions || [];
     const p3Trans = p3.transcripts || [];
@@ -1928,16 +1940,111 @@ async function viewSessionDetail(sessionId) {
       });
     }
 
-    // --- PDF download button ---
+    _historyDetailSession = s;
     html += `<div class="detail-actions">
-      <button class="btn btn-secondary" data-action="download-session-pdf" data-session-id="${sessionId}">Download PDF</button>
+      <button class="btn btn-primary" data-action="copy-history-detail">📋 Copy for Claude Analysis</button>
+      <button class="btn btn-secondary" data-action="download-session-pdf" data-session-id="${sessionId}">📄 Download PDF</button>
       <button class="btn btn-ghost" data-action="back-to-history">&larr; Back to list</button>
-    </div>`;
+    </div>
+    <div class="copy-toast" id="history-copy-toast">Copied to clipboard!</div>`;
 
     container.innerHTML = html;
-  } catch {
-    container.innerHTML = '<p style="color:var(--danger)">Failed to load session detail.</p>' +
+  } catch (err) {
+    container.innerHTML = `<p style="color:var(--danger)">Failed to load session: ${escapeHtml(err.message)}</p>` +
       '<button class="btn btn-ghost" data-action="back-to-history">&larr; Back to list</button>';
+  }
+}
+
+let _historyDetailSession = null;
+
+function buildHistoryMarkdown(s) {
+  if (!s) return '';
+  const now = s.created_at ? new Date(s.created_at).toLocaleString() : 'Unknown';
+  let md = '';
+
+  const _p = (field) => {
+    if (s.type === 'mock') return s.part1?.[field] || [];
+    if (s.type === 'part1') return s[field] || [];
+    return [];
+  };
+  const _p2 = (field, fallback) => {
+    if (s.type === 'mock') return s.part2?.[field] ?? fallback;
+    if (s.type === 'part2') return s[field] ?? fallback;
+    return fallback;
+  };
+
+  const p1Qs = _p('questions');
+  const p1Trans = _p('transcripts');
+  const p1Analyses = _p('analyses');
+  const p1Samples = _p('sample_answers');
+
+  if (p1Qs.length > 0) {
+    md += `## IELTS Speaking Part 1\nDate: ${now}\n\n`;
+    p1Qs.forEach((q, i) => {
+      md += `### Q${i + 1}\n`;
+      md += `**Q:** ${q}\n`;
+      md += `**My Answer:** ${p1Trans[i] || '—'}\n`;
+      if (p1Samples[i]) md += `**Sample Answer:** ${p1Samples[i]}\n`;
+      md += buildAnalysisMarkdown(p1Analyses[i] || {});
+      md += '\n';
+    });
+  }
+
+  const p2Topic = _p2('topic', '');
+  const p2Transcript = _p2('transcript', '');
+  const p2Analysis = _p2('analysis', {});
+  const p2Sample = _p2('sample_answer', '');
+
+  if (p2Topic) {
+    md += `## IELTS Speaking Part 2 & 3\nDate: ${now}\n\n`;
+    md += `### Topic Card\n${p2Topic}\n\n`;
+    md += `### Part 2 — My Response\n${p2Transcript || '—'}\n`;
+    md += buildAnalysisMarkdown(p2Analysis);
+    if (p2Sample) md += `\n### Sample Answer\n${p2Sample}\n`;
+
+    const p3 = s.part3 || {};
+    const p3Qs = p3.questions || [];
+    const p3Trans = p3.transcripts || [];
+    const p3Analyses = p3.analyses || [];
+    const p3Samples = p3.sample_answers || [];
+
+    if (p3Qs.length > 0) {
+      md += `\n### Part 3 — Discussion\n\n`;
+      p3Qs.forEach((q, i) => {
+        md += `#### Q${i + 1}\n`;
+        md += `**Q:** ${q}\n`;
+        md += `**My Answer:** ${p3Trans[i] || '—'}\n`;
+        if (p3Samples[i]) md += `**Sample Answer:** ${p3Samples[i]}\n`;
+        md += buildAnalysisMarkdown(p3Analyses[i] || {});
+        md += '\n';
+      });
+    }
+  }
+
+  md += `---\n\nPlease analyze my responses for:\n`;
+  md += `1. Fluency and coherence\n`;
+  md += `2. Lexical resource (vocabulary range)\n`;
+  md += `3. Grammatical range and accuracy\n`;
+  md += `4. Compare my answer with the sample answer and identify gaps\n`;
+  md += `5. Estimated band score\n`;
+  md += `6. Specific suggestions for improvement\n`;
+  return md;
+}
+
+async function copyHistoryDetail() {
+  const md = buildHistoryMarkdown(_historyDetailSession);
+  if (!md) return;
+  try {
+    await navigator.clipboard.writeText(md);
+    const toast = $('#history-copy-toast');
+    if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = md;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   }
 }
 
