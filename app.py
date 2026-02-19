@@ -306,6 +306,16 @@ async def transcribe(
 
         if all_words and analysis:
             analysis["pronunciation"] = _pronunciation_score(all_words)
+            # Merge pronunciation band into overall IELTS band (4 criteria)
+            pron_band = analysis["pronunciation"].get("score")
+            if pron_band and analysis.get("band"):
+                analysis["band"]["pronunciation"] = pron_band
+                fc = analysis["band"]["fluency_coherence"]
+                lr = analysis["band"]["lexical_resource"]
+                gra = analysis["band"]["grammatical_range"]
+                analysis["band"]["overall"] = _band_round(
+                    (fc + lr + gra + pron_band) / 4
+                )
 
         return {
             "transcript": transcript,
@@ -480,6 +490,7 @@ _BAND_LABELS = {
     "fluency_coherence": "Fluency & Coherence",
     "lexical_resource": "Lexical Resource",
     "grammatical_range": "Grammatical Range",
+    "pronunciation": "Pronunciation",
 }
 
 
@@ -553,7 +564,7 @@ async def get_stats():
     # --- Weakness ---
     weakness = None
     if all_bands:
-        keys = ["fluency_coherence", "lexical_resource", "grammatical_range"]
+        keys = ["fluency_coherence", "lexical_resource", "grammatical_range", "pronunciation"]
         avgs = {}
         for k in keys:
             vals = [b[k] for b in all_bands if k in b and b[k] is not None]
@@ -628,6 +639,7 @@ async def export_session_pdf(session_id: str):
             ("FC", band.get("fluency_coherence")),
             ("LR", band.get("lexical_resource")),
             ("GRA", band.get("grammatical_range")),
+            ("Pron", band.get("pronunciation")),
         ]
         for lbl, val in labels:
             pdf.cell(25, 5, lbl)

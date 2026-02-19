@@ -1048,8 +1048,12 @@ function buildBandHtml(band) {
         <div class="band-value ${bandClass(band.grammatical_range)}">${band.grammatical_range}</div>
         <div class="band-label">Grammar</div>
       </div>
+      ${band.pronunciation ? `<div class="band-card">
+        <div class="band-value ${bandClass(band.pronunciation)}">${band.pronunciation}</div>
+        <div class="band-label">Pronun.</div>
+      </div>` : ''}
     </div>
-    <div class="band-disclaimer">* Band scores estimated from transcript text; pronunciation scored separately via Whisper confidence</div>`;
+    <div class="band-disclaimer">* Pronunciation estimated via Whisper confidence; FC/LR/GRA from transcript analysis</div>`;
 }
 
 function ratePronunciation(score) {
@@ -1404,7 +1408,8 @@ function buildAnalysisMarkdown(a) {
   if (a.band) {
     s += `**Estimated Band:** Overall ${a.band.overall} · `;
     s += `FC ${a.band.fluency_coherence} · LR ${a.band.lexical_resource} · GRA ${a.band.grammatical_range}`;
-    s += ` *(transcript-based estimate, pronunciation not assessed)*\n`;
+    if (a.band.pronunciation) s += ` · P ${a.band.pronunciation}`;
+    s += ` *(FC/LR/GRA from transcript; P from Whisper confidence)*\n`;
   }
   s += `**Speech Metrics:** ${a.wpm} WPM · ${a.word_count} words · ${a.filler_count} fillers · `;
   s += `TTR ${a.vocabulary_diversity} · ${a.discourse_markers} discourse markers · `;
@@ -1657,6 +1662,7 @@ function extractBandTrend(sessions) {
       fc: avg('fluency_coherence'),
       lr: avg('lexical_resource'),
       gra: avg('grammatical_range'),
+      pron: avg('pronunciation'),
       overall: avg('overall'),
       type: s.type,
     });
@@ -1706,12 +1712,14 @@ function renderTrendChart(points) {
         ${makeLine('fc', '#00d4aa')}
         ${makeLine('lr', '#ffc107')}
         ${makeLine('gra', '#70a1ff')}
+        ${makeLine('pron', '#ff6b9d')}
         ${makeLine('overall', '#e8e8f0')}
       </svg>
       <div class="trend-legend">
         <span style="color:#00d4aa">FC</span>
         <span style="color:#ffc107">LR</span>
         <span style="color:#70a1ff">GRA</span>
+        <span style="color:#ff6b9d">P</span>
         <span style="color:#e8e8f0">Overall</span>
       </div>
     </div>`;
@@ -1736,6 +1744,7 @@ function renderHistoryCard(s) {
         <span class="hb-item ${bandClass(bandData.fc)}">FC ${bandData.fc}</span>
         <span class="hb-item ${bandClass(bandData.lr)}">LR ${bandData.lr}</span>
         <span class="hb-item ${bandClass(bandData.gra)}">GRA ${bandData.gra}</span>
+        ${bandData.pron != null ? `<span class="hb-item ${bandClass(bandData.pron)}">P ${bandData.pron}</span>` : ''}
       </div>`;
   }
 
@@ -1782,7 +1791,7 @@ function _getSessionOverallBand(s) {
     return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 2) / 2 : null;
   };
 
-  return { overall: avg('overall'), fc: avg('fluency_coherence'), lr: avg('lexical_resource'), gra: avg('grammatical_range') };
+  return { overall: avg('overall'), fc: avg('fluency_coherence'), lr: avg('lexical_resource'), gra: avg('grammatical_range'), pron: avg('pronunciation') };
 }
 
 // ---------------------------------------------------------------------------
