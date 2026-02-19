@@ -347,6 +347,14 @@ textarea:focus {
   opacity: 1;
 }
 
+.recording-badge.reading {
+  color: var(--primary);
+}
+
+.recording-badge.reading .rec-dot {
+  background: var(--primary);
+}
+
 .rec-dot {
   width: 10px;
   height: 10px;

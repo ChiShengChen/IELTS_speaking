@@ -52,6 +52,53 @@ function generateSessionId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+let _readingTimer = null;
+
+function readingCountdown(textEl, ringEl, badgeEl, seconds = 5) {
+  return new Promise((resolve) => {
+    let remaining = seconds;
+    const circumference = 2 * Math.PI * 52;
+    ringEl.style.strokeDasharray = circumference;
+    ringEl.style.strokeDashoffset = 0;
+    ringEl.classList.remove('warning', 'danger');
+    textEl.textContent = remaining;
+
+    if (badgeEl) {
+      badgeEl.classList.add('active', 'reading');
+      badgeEl.querySelector('.rec-label').textContent = 'Read the question';
+    }
+
+    _readingTimer = {
+      id: setInterval(() => {
+        remaining--;
+        textEl.textContent = remaining > 0 ? remaining : '';
+        const fraction = 1 - remaining / seconds;
+        ringEl.style.strokeDashoffset = circumference * fraction;
+
+        if (remaining <= 0) {
+          clearInterval(_readingTimer.id);
+          _readingTimer = null;
+          if (badgeEl) badgeEl.classList.remove('reading');
+          playBeep(800, 200);
+          resolve(true);
+        }
+      }, 1000),
+      resolve,
+    };
+  });
+}
+
+function cancelReadingCountdown() {
+  if (_readingTimer) {
+    clearInterval(_readingTimer.id);
+    const { resolve } = _readingTimer;
+    _readingTimer = null;
+    resolve(false);
+    return true;
+  }
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Routing — event delegation
 // ---------------------------------------------------------------------------
@@ -495,20 +542,23 @@ async function startPart1() {
   runPart1Question();
 }
 
-function runPart1Question() {
+async function runPart1Question() {
   const idx = state.part1Index;
   const total = state.part1Questions.length;
   const q = state.part1Questions[idx];
 
-  // Update UI
   $('#part1-counter').textContent = `Q${idx + 1} / ${total}`;
   $('#part1-question-text').textContent = q;
-  $('#part1-rec-badge').classList.add('active');
 
-  // Start recording
+  const ok = await readingCountdown(
+    $('#part1-timer-text'), $('#part1-ring'), $('#part1-rec-badge'),
+  );
+  if (!ok) return;
+
+  $('#part1-rec-badge').classList.add('active');
+  $('#part1-rec-badge').querySelector('.rec-label').textContent = 'Recording';
   state.recorder.start();
 
-  // Start timer
   state.part1Timer = new Timer(
     45,
     $('#part1-ring'),
@@ -522,26 +572,29 @@ function runPart1Question() {
 }
 
 async function advancePart1() {
-  // Stop current timer & recording
+  const wasReading = cancelReadingCountdown();
+
   if (state.part1Timer) state.part1Timer.stop();
-  $('#part1-rec-badge').classList.remove('active');
+  $('#part1-rec-badge').classList.remove('active', 'reading');
 
   let blob;
-  try {
-    blob = await state.recorder.stop();
-  } catch {
+  if (wasReading) {
     blob = new Blob([], { type: 'audio/webm' });
+  } else {
+    try {
+      blob = await state.recorder.stop();
+    } catch {
+      blob = new Blob([], { type: 'audio/webm' });
+    }
   }
   state.part1Recordings.push(blob);
 
   state.part1Index++;
 
   if (state.part1Index < state.part1Questions.length) {
-    // Reset timer ring for next question
-    state.part1Timer.reset(45);
+    if (state.part1Timer) state.part1Timer.reset(45);
     runPart1Question();
   } else {
-    // All done — transcribe
     finishPart1();
   }
 }
@@ -669,10 +722,8 @@ async function startPart2() {
 }
 
 async function startPart2Speaking() {
-  // Save notes
   state.part2Notes = $('#part2-notes-area').value.trim();
 
-  // Init recorder if needed
   try {
     await state.recorder.init();
   } catch {
@@ -681,17 +732,19 @@ async function startPart2Speaking() {
     return;
   }
 
-  // Setup speaking screen
   $('#part2-topic-display-2').textContent = state.part2Topic;
   $('#part2-notes-reminder').textContent = state.part2Notes || '(no notes)';
-  $('#part2-rec-badge').classList.add('active');
 
   showScreen('part2-speaking');
 
-  // Start recording
+  await readingCountdown(
+    $('#part2-speak-timer'), $('#part2-speak-ring'), $('#part2-rec-badge'),
+  );
+
+  $('#part2-rec-badge').classList.add('active');
+  $('#part2-rec-badge').querySelector('.rec-label').textContent = 'Recording';
   state.recorder.start();
 
-  // Start 2-minute speaking timer
   state.part2SpeakTimer = new Timer(
     120,
     $('#part2-speak-ring'),
@@ -847,15 +900,21 @@ async function startPart3(questions) {
   runPart3Question();
 }
 
-function runPart3Question() {
+async function runPart3Question() {
   const idx = state.part3Index;
   const total = state.part3Questions.length;
   const q = state.part3Questions[idx];
 
   $('#part3-counter').textContent = `Q${idx + 1} / ${total}`;
   $('#part3-question-text').textContent = q;
-  $('#part3-rec-badge').classList.add('active');
 
+  const ok = await readingCountdown(
+    $('#part3-timer-text'), $('#part3-ring'), $('#part3-rec-badge'),
+  );
+  if (!ok) return;
+
+  $('#part3-rec-badge').classList.add('active');
+  $('#part3-rec-badge').querySelector('.rec-label').textContent = 'Recording';
   state.recorder.start();
 
   state.part3Timer = new Timer(
@@ -871,21 +930,27 @@ function runPart3Question() {
 }
 
 async function advancePart3() {
+  const wasReading = cancelReadingCountdown();
+
   if (state.part3Timer) state.part3Timer.stop();
-  $('#part3-rec-badge').classList.remove('active');
+  $('#part3-rec-badge').classList.remove('active', 'reading');
 
   let blob;
-  try {
-    blob = await state.recorder.stop();
-  } catch {
+  if (wasReading) {
     blob = new Blob([], { type: 'audio/webm' });
+  } else {
+    try {
+      blob = await state.recorder.stop();
+    } catch {
+      blob = new Blob([], { type: 'audio/webm' });
+    }
   }
   state.part3Recordings.push(blob);
 
   state.part3Index++;
 
   if (state.part3Index < state.part3Questions.length) {
-    state.part3Timer.reset(60);
+    if (state.part3Timer) state.part3Timer.reset(60);
     runPart3Question();
   } else {
     finishPart3();
