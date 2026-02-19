@@ -128,6 +128,9 @@ document.addEventListener('click', (e) => {
     'reshuffle-part1':  loadFilePart1,
     'reset-drawn-part2':  resetDrawnHistoryPart2,
     'reshuffle-part2':    loadFilePart2,
+    'view-session':       () => { viewSessionDetail(btn.dataset.sessionId); },
+    'back-to-history':    loadHistory,
+    'download-session-pdf': () => { window.open(`/api/sessions/${btn.dataset.sessionId}/pdf`); },
   };
 
   if (handlers[action]) handlers[action]();
@@ -1730,7 +1733,7 @@ function renderHistoryCard(s) {
   }
 
   return `
-    <div class="history-card" onclick="viewSessionDetail('${s.session_id}')" role="button" tabindex="0">
+    <div class="history-card" data-action="view-session" data-session-id="${s.session_id}" role="button" tabindex="0">
       <div class="history-card-header">
         <span class="history-type">${typeLabel}</span>
         <span class="history-date">${date}</span>
@@ -1789,7 +1792,7 @@ async function viewSessionDetail(sessionId) {
         })
       : '';
 
-    let html = `<button class="btn btn-ghost btn-small" onclick="loadHistory()">&larr; Back to list</button>`;
+    let html = `<button class="btn btn-ghost btn-small" data-action="back-to-history">&larr; Back to list</button>`;
     html += `<div class="session-detail-header">
       <h3>${typeLabel}</h3>
       <span class="history-date">${date}</span>
@@ -1893,14 +1896,14 @@ async function viewSessionDetail(sessionId) {
 
     // --- PDF download button ---
     html += `<div class="detail-actions">
-      <button class="btn btn-secondary" onclick="window.open('/api/sessions/${sessionId}/pdf')">Download PDF</button>
-      <button class="btn btn-ghost" onclick="loadHistory()">&larr; Back to list</button>
+      <button class="btn btn-secondary" data-action="download-session-pdf" data-session-id="${sessionId}">Download PDF</button>
+      <button class="btn btn-ghost" data-action="back-to-history">&larr; Back to list</button>
     </div>`;
 
     container.innerHTML = html;
   } catch {
     container.innerHTML = '<p style="color:var(--danger)">Failed to load session detail.</p>' +
-      '<button class="btn btn-ghost" onclick="loadHistory()">&larr; Back to list</button>';
+      '<button class="btn btn-ghost" data-action="back-to-history">&larr; Back to list</button>';
   }
 }
 
