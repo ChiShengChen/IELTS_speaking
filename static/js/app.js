@@ -1730,13 +1730,14 @@ function renderHistoryCard(s) {
   }
 
   return `
-    <div class="history-card">
+    <div class="history-card" onclick="viewSessionDetail('${s.session_id}')" role="button" tabindex="0">
       <div class="history-card-header">
         <span class="history-type">${typeLabel}</span>
         <span class="history-date">${date}</span>
       </div>
       ${bandHtml}
       ${detailHtml}
+      <div class="history-card-arrow">&rsaquo;</div>
     </div>`;
 }
 
@@ -1764,6 +1765,143 @@ function _getSessionOverallBand(s) {
   };
 
   return { overall: avg('overall'), fc: avg('fluency_coherence'), lr: avg('lexical_resource'), gra: avg('grammatical_range') };
+}
+
+// ---------------------------------------------------------------------------
+// Session Detail View (from history)
+// ---------------------------------------------------------------------------
+async function viewSessionDetail(sessionId) {
+  const container = $('#history-content');
+  container.innerHTML = '<div class="processing-content"><div class="spinner"></div></div>';
+
+  try {
+    const res = await fetch(`/api/sessions/${sessionId}`);
+    if (!res.ok) throw new Error('Not found');
+    const s = await res.json();
+
+    const typeLabel = s.type === 'part1' ? 'Part 1 Practice'
+      : s.type === 'part2' ? 'Part 2 & 3 Practice'
+      : s.type === 'mock' ? 'Mock Test' : s.type || 'Session';
+    const date = s.created_at
+      ? new Date(s.created_at).toLocaleString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+        })
+      : '';
+
+    let html = `<button class="btn btn-ghost btn-small" onclick="loadHistory()">&larr; Back to list</button>`;
+    html += `<div class="session-detail-header">
+      <h3>${typeLabel}</h3>
+      <span class="history-date">${date}</span>
+    </div>`;
+
+    const legend = `<div class="hl-legend">
+      <span class="hl-leg-filler">Fillers</span>
+      <span class="hl-leg-discourse">Discourse markers</span>
+      <span class="hl-leg-complex">Complex structures</span>
+    </div>`;
+    html += legend;
+
+    // --- Part 1 ---
+    const p1Qs = s.type === 'mock' ? (s.part1?.questions || []) : s.type === 'part1' ? (s.questions || []) : [];
+    const p1Trans = s.type === 'mock' ? (s.part1?.transcripts || []) : s.type === 'part1' ? (s.transcripts || []) : [];
+    const p1Analyses = s.type === 'mock' ? (s.part1?.analyses || []) : s.type === 'part1' ? (s.analyses || []) : [];
+    const p1Samples = s.type === 'mock' ? (s.part1?.sample_answers || []) : s.type === 'part1' ? (s.sample_answers || []) : [];
+
+    if (p1Qs.length > 0) {
+      if (s.type === 'mock') html += '<h4 class="detail-section-title">Part 1</h4>';
+      p1Qs.forEach((q, i) => {
+        const transcript = p1Trans[i] || '—';
+        const analysis = p1Analyses[i] || {};
+        const sample = p1Samples[i] || '';
+        const sampleHtml = sample
+          ? `<div class="sample-answer"><div class="sample-label">Sample Answer</div><div class="sample-text">${escapeHtml(sample)}</div></div>`
+          : '';
+
+        html += `<div class="result-card">
+          <h4>Q${i + 1}</h4>
+          <div class="question-text">${escapeHtml(q)}</div>
+          <div class="transcript-text">${highlightTranscript(typeof transcript === 'string' ? transcript : transcript?.transcript || '—')}</div>
+          <div class="duration-text">Duration: ${typeof transcript === 'object' ? transcript?.duration || 0 : 0}s</div>
+          ${buildAnalysisHtml(analysis)}
+          ${sampleHtml}
+        </div>`;
+      });
+    }
+
+    // --- Part 2 ---
+    const p2Topic = s.type === 'mock' ? (s.part2?.topic || '') : s.type === 'part2' ? (s.topic || '') : '';
+    const p2Transcript = s.type === 'mock' ? (s.part2?.transcript || '') : s.type === 'part2' ? (s.transcript || '') : '';
+    const p2Analysis = s.type === 'mock' ? (s.part2?.analysis || {}) : s.type === 'part2' ? (s.analysis || {}) : {};
+    const p2Sample = s.type === 'mock' ? (s.part2?.sample_answer || '') : s.type === 'part2' ? (s.sample_answer || '') : '';
+    const p2Notes = s.type === 'mock' ? (s.part2?.notes || '') : s.type === 'part2' ? (s.notes || '') : '';
+
+    if (p2Topic) {
+      if (s.type === 'mock') html += '<h4 class="detail-section-title">Part 2</h4>';
+      html += `<div class="result-card">
+        <h4>Topic Card</h4>
+        <div class="question-text">${escapeHtml(p2Topic)}</div>
+      </div>`;
+
+      if (p2Notes) {
+        html += `<div class="result-card">
+          <h4>Your Notes</h4>
+          <div class="transcript-text">${escapeHtml(p2Notes)}</div>
+        </div>`;
+      }
+
+      const p2SampleHtml = p2Sample
+        ? `<div class="sample-answer"><div class="sample-label">Sample Answer</div><div class="sample-text">${escapeHtml(p2Sample)}</div></div>`
+        : '';
+
+      html += `<div class="result-card">
+        <h4>Part 2 — Your Response</h4>
+        <div class="transcript-text">${highlightTranscript(p2Transcript || '—')}</div>
+        <div class="duration-text">Duration: ${s.type === 'mock' ? (s.part2?.duration || 0) : (s.duration || 0)}s</div>
+        ${buildAnalysisHtml(p2Analysis)}
+        ${p2SampleHtml}
+      </div>`;
+    }
+
+    // --- Part 3 ---
+    const p3 = s.part3 || {};
+    const p3Qs = p3.questions || [];
+    const p3Trans = p3.transcripts || [];
+    const p3Analyses = p3.analyses || [];
+    const p3Samples = p3.sample_answers || [];
+
+    if (p3Qs.length > 0) {
+      html += '<h4 class="detail-section-title">Part 3</h4>';
+      p3Qs.forEach((q, i) => {
+        const transcript = p3Trans[i] || '—';
+        const analysis = p3Analyses[i] || {};
+        const sample = p3Samples[i] || '';
+        const sampleHtml = sample
+          ? `<div class="sample-answer"><div class="sample-label">Sample Answer</div><div class="sample-text">${escapeHtml(sample)}</div></div>`
+          : '';
+
+        html += `<div class="result-card">
+          <h4>Part 3 — Q${i + 1}</h4>
+          <div class="question-text">${escapeHtml(q)}</div>
+          <div class="transcript-text">${highlightTranscript(transcript)}</div>
+          <div class="duration-text">Duration: ${p3.durations?.[i] || 0}s</div>
+          ${buildAnalysisHtml(analysis)}
+          ${sampleHtml}
+        </div>`;
+      });
+    }
+
+    // --- PDF download button ---
+    html += `<div class="detail-actions">
+      <button class="btn btn-secondary" onclick="window.open('/api/sessions/${sessionId}/pdf')">Download PDF</button>
+      <button class="btn btn-ghost" onclick="loadHistory()">&larr; Back to list</button>
+    </div>`;
+
+    container.innerHTML = html;
+  } catch {
+    container.innerHTML = '<p style="color:var(--danger)">Failed to load session detail.</p>' +
+      '<button class="btn btn-ghost" onclick="loadHistory()">&larr; Back to list</button>';
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -795,6 +795,28 @@ textarea:focus {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+
+.history-card:hover {
+  border-color: var(--primary);
+  background: rgba(0, 212, 170, 0.04);
+}
+
+.history-card-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.history-card:hover .history-card-arrow {
+  color: var(--primary);
 }
 
 .history-card-header {
@@ -833,9 +855,36 @@ textarea:focus {
   font-size: 0.82rem;
   color: var(--text-muted);
   margin-top: 0.3rem;
+  padding-right: 1.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.session-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0.8rem 0 0.6rem;
+}
+
+.session-detail-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.detail-section-title {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 0.95rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
 }
 
 .trend-chart-wrapper {
