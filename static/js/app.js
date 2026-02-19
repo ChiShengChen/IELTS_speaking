@@ -1157,6 +1157,7 @@ function renderResults() {
           : null;
 
     const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
+    const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
     container.innerHTML += `
       <div class="result-card">
         <h4>Part 2 — Your Response</h4>
@@ -1168,6 +1169,24 @@ function renderResults() {
         ${buildVocabUsageHtml(t.transcript)}
         ${sampleHtml}
       </div>`;
+
+    if (state.part3Transcripts.length > 0) {
+      state.part3Questions.forEach((q, i) => {
+        const p3t = state.part3Transcripts[i] || {};
+        const p3Label = state.part3Parsed[i]?.id || `${i + 1}`;
+        const p3BlobUrl = state.part3Recordings[i]
+          ? URL.createObjectURL(state.part3Recordings[i])
+          : null;
+
+        container.innerHTML += `
+          <div class="result-card">
+            <h4>Part 3 — Q${escapeHtml(p3Label)}</h4>
+            <div class="question-text">${escapeHtml(q)}</div>
+            <div class="transcript-text">${highlightTranscript(p3t.transcript || '—')}</div>
+            <div class="duration-text">Duration: ${p3t.duration || 0}s</div>
+            ${p3BlobUrl ? `<audio controls src="${p3BlobUrl}"></audio>` : ''}
+            ${buildAnalysisHtml(p3t.analysis)}
+          </div>`;
       });
     }
   }
