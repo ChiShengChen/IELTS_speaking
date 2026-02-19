@@ -554,6 +554,18 @@ async def export_session_pdf(session_id: str):
 
     from fpdf import FPDF
 
+    _UNICODE_MAP = str.maketrans({
+        "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+        "\u2013": "-", "\u2014": "-", "\u2026": "...", "\u00a0": " ",
+        "\u200b": "", "\u2002": " ", "\u2003": " ", "\ufeff": "",
+    })
+
+    def _safe(text: str) -> str:
+        if not text:
+            return ""
+        text = text.translate(_UNICODE_MAP)
+        return text.encode("latin-1", errors="replace").decode("latin-1")
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.add_page()
@@ -561,7 +573,7 @@ async def export_session_pdf(session_id: str):
 
     stype = d.get("type", "unknown")
     title_map = {"part1": "Part 1 Practice", "part2": "Part 2 & 3 Practice", "mock": "Mock Test"}
-    pdf.cell(0, 12, f"IELTS Speaking - {title_map.get(stype, stype.upper())}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 12, _safe(f"IELTS Speaking - {title_map.get(stype, stype.upper())}"), new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_font("Helvetica", "", 10)
     date_str = d.get("created_at", d.get("saved_at", ""))
@@ -588,14 +600,14 @@ async def export_session_pdf(session_id: str):
 
     def _add_qa(label: str, question: str, transcript: str, analysis: dict, sample: str = "") -> None:
         pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(0, 7, label, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 7, _safe(label), new_x="LMARGIN", new_y="NEXT")
 
         pdf.set_font("Helvetica", "B", 9)
-        pdf.multi_cell(0, 5, f"Q: {question}")
+        pdf.multi_cell(0, 5, _safe(f"Q: {question}"))
         pdf.ln(1)
 
         pdf.set_font("Helvetica", "", 9)
-        pdf.multi_cell(0, 5, f"My answer: {transcript}")
+        pdf.multi_cell(0, 5, _safe(f"My answer: {transcript}"))
         pdf.ln(1)
 
         if isinstance(analysis, dict) and analysis.get("band"):
@@ -615,12 +627,12 @@ async def export_session_pdf(session_id: str):
 
             pron = analysis.get("pronunciation")
             if pron and pron.get("score"):
-                pdf.multi_cell(0, 4, f"Pronunciation: {pron['clarity']} (score {pron['score']}, avg conf {pron.get('avg_confidence', '-')})")
+                pdf.multi_cell(0, 4, _safe(f"Pronunciation: {pron['clarity']} (score {pron['score']}, avg conf {pron.get('avg_confidence', '-')})"))
                 pdf.ln(1)
 
         if sample:
             pdf.set_font("Helvetica", "I", 8)
-            pdf.multi_cell(0, 4, f"Sample: {sample}")
+            pdf.multi_cell(0, 4, _safe(f"Sample: {sample}"))
             pdf.ln(1)
 
         pdf.ln(3)
@@ -643,12 +655,12 @@ async def export_session_pdf(session_id: str):
         pdf.set_font("Helvetica", "B", 11)
         pdf.cell(0, 7, "Topic Card", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 9)
-        pdf.multi_cell(0, 5, d.get("topic", ""))
+        pdf.multi_cell(0, 5, _safe(d.get("topic", "")))
         pdf.ln(2)
 
         if d.get("notes"):
             pdf.set_font("Helvetica", "I", 9)
-            pdf.multi_cell(0, 5, f"Notes: {d['notes']}")
+            pdf.multi_cell(0, 5, _safe(f"Notes: {d['notes']}"))
             pdf.ln(2)
 
         _add_qa("Part 2 Response", d.get("topic", ""), d.get("transcript", "-"),
@@ -678,7 +690,7 @@ async def export_session_pdf(session_id: str):
             pdf.set_font("Helvetica", "B", 11)
             pdf.cell(0, 7, "Part 2 Topic", new_x="LMARGIN", new_y="NEXT")
             pdf.set_font("Helvetica", "", 9)
-            pdf.multi_cell(0, 5, p2.get("topic", ""))
+            pdf.multi_cell(0, 5, _safe(p2.get("topic", "")))
             pdf.ln(2)
 
             _add_qa("Part 2 Response", p2.get("topic", ""), p2.get("transcript", "-"),

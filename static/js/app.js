@@ -1406,13 +1406,21 @@ async function downloadPdf() {
     return;
   }
   try {
-    const url = `/api/sessions/${state.sessionId}/pdf`;
+    const res = await fetch(`/api/sessions/${state.sessionId}/pdf`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      alert(`PDF export failed: ${err.detail || 'Unknown error'}`);
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `ielts_session_${state.sessionId}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   } catch {
     alert('Failed to download PDF.');
   }
