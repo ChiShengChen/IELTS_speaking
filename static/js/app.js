@@ -213,6 +213,7 @@ let _allFileParsed = [];  // all questions from the file (for drawn tracking)
 
 // Part 2 file-loaded state
 let _fileAnswersPart2 = {};
+let _fileAnswersPart3 = {};
 let _allFileParsedPart2 = [];
 let _currentPart2Id = null;
 let _part3AllParsed = [];
@@ -320,6 +321,10 @@ async function preloadPart3() {
     if (!res.ok) return;
     const { content } = await res.json();
     _part3AllParsed = parseQuestionsMarkdown(content);
+    _fileAnswersPart3 = {};
+    _part3AllParsed.forEach((p) => {
+      if (p.answer) _fileAnswersPart3[p.id] = p.answer;
+    });
   } catch { /* ignore */ }
 }
 
@@ -467,6 +472,8 @@ async function startMockTest() {
 
     if (p3Res?.content) {
       _part3AllParsed = parseQuestionsMarkdown(p3Res.content);
+      _fileAnswersPart3 = {};
+      _part3AllParsed.forEach((p) => { if (p.answer) _fileAnswersPart3[p.id] = p.answer; });
     }
 
     let [drawnP1, drawnP2] = [[], []];
@@ -828,6 +835,7 @@ async function savePart2Session() {
       transcripts: state.part3Transcripts.map((t) => t.transcript),
       durations: state.part3Transcripts.map((t) => t.duration),
       analyses: state.part3Transcripts.map((t) => t.analysis || {}),
+      sample_answers: state.part3Parsed.map((p) => _fileAnswersPart3[p.id] || ''),
     };
   }
 
@@ -866,6 +874,7 @@ async function saveMockSession() {
       transcripts: state.part3Transcripts.map((t) => t.transcript),
       durations: state.part3Transcripts.map((t) => t.duration),
       analyses: state.part3Transcripts.map((t) => t.analysis || {}),
+      sample_answers: state.part3Parsed.map((p) => _fileAnswersPart3[p.id] || ''),
     };
   }
 
@@ -1195,6 +1204,7 @@ function renderResults() {
          </div>`
       : '';
 
+    const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
     container.innerHTML += `
       <div class="result-card">
         <h4>Topic${_currentPart2Id ? ` (Q${_currentPart2Id})` : ''}</h4>
@@ -1204,26 +1214,6 @@ function renderResults() {
         <h4>Your Notes</h4>
         <div class="transcript-text">${escapeHtml(state.part2Notes || '(no notes)')}</div>
       </div>
-      <div class="result-card">
-        <h4>Part 2 — Your Response</h4>
-        <div class="transcript-text">${highlightTranscript(t.transcript || '—')}</div>
-        <div class="duration-text">Duration: ${t.duration || 0}s</div>
-        ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
-        ${buildAnalysisHtml(t.analysis)}
-        ${sampleHtml}
-      </div>`;
-
-    if (state.part3Transcripts.length > 0) {
-      state.part3Questions.forEach((q, i) => {
-        const p3t = state.part3Transcripts[i] || {};
-        const p3Label = state.part3Parsed[i]?.id || `${i + 1}`;
-        const p3BlobUrl = state.part3Recordings[i]
-          ? URL.createObjectURL(state.part3Recordings[i])
-          : null;
-
-    const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
-    const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
-    container.innerHTML += `
       <div class="result-card">
         <h4>Part 2 — Your Response</h4>
         <div class="transcript-text">${highlightTranscript(t.transcript || '—')}</div>
@@ -1242,6 +1232,13 @@ function renderResults() {
         const p3BlobUrl = state.part3Recordings[i]
           ? URL.createObjectURL(state.part3Recordings[i])
           : null;
+        const p3Answer = _fileAnswersPart3[p3Label] || '';
+        const p3SampleHtml = p3Answer
+          ? `<div class="sample-answer">
+               <div class="sample-label">Sample Answer</div>
+               <div class="sample-text">${escapeHtml(p3Answer)}</div>
+             </div>`
+          : '';
 
         container.innerHTML += `
           <div class="result-card">
@@ -1251,6 +1248,7 @@ function renderResults() {
             <div class="duration-text">Duration: ${p3t.duration || 0}s</div>
             ${p3BlobUrl ? `<audio controls src="${p3BlobUrl}"></audio>` : ''}
             ${buildAnalysisHtml(p3t.analysis)}
+            ${p3SampleHtml}
           </div>`;
       });
     }
@@ -1459,9 +1457,11 @@ function buildMarkdown() {
       state.part3Questions.forEach((q, i) => {
         const p3t = state.part3Transcripts[i] || {};
         const p3Label = state.part3Parsed[i]?.id || `${i + 1}`;
+        const p3Sample = _fileAnswersPart3[p3Label] || '';
         md += `#### Q${p3Label}\n`;
         md += `**Q:** ${q}\n`;
         md += `**My Answer:** ${p3t.transcript || '—'}\n`;
+        if (p3Sample) md += `**Sample Answer:** ${p3Sample}\n`;
         md += `**Duration:** ${p3t.duration || 0}s\n`;
         md += buildAnalysisMarkdown(p3t.analysis);
         md += '\n';

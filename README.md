@@ -10,7 +10,7 @@
 - **Whisper ASR**：採用本地 faster-whisper (base 模型) 進行離線轉寫，無需 API key。
 - **語音分析**：每段錄音自動計算 WPM、填充詞、詞彙多樣性 (TTR)、篇章標記與複雜句型。
 - **IELTS 分數估算**：根據轉寫文本自動估算 Fluency & Coherence、Lexical Resource、Grammatical Range 與 Overall Band Score。
-- **範例答案對照**：Part 1 與 Part 2 結果頁面皆顯示範例答案，方便與自己的回答進行比較。
+- **範例答案對照**：Part 1、Part 2 與 Part 3 結果頁面皆顯示範例答案，方便與自己的回答進行比較。
 - **結果匯出**：一鍵複製 Markdown 格式結果（含轉寫、範例答案、分析指標與分數估算），可直接貼入 Claude 或 ChatGPT 進行深度分析。
 - **完整模擬測驗 (Mock Test)**：一鍵啟動 Part 1 → Part 2 → Part 3 連續模擬測驗，自動抽題、計時、錄音，結束後顯示所有部分的綜合成績。
 - **練習歷史儀表板**：查看所有過往練習紀錄，包含各項 Band Score 與 SVG 趨勢圖（FC / LR / GRA / Overall 隨時間變化）。
@@ -29,7 +29,8 @@
 | `speaking_p1.md` | Part 1 題目與範例答案 | 31 個主題，約 120+ 題 |
 | `speaking_p2.md` | Part 2 題目卡（純題目） | 51 張題目卡 |
 | `speaking_p2_with_answers.md` | Part 2 題目卡 + Band 7 範例答案 | 51 組 Q/A |
-| `speaking_p3.md` | Part 3 討論題（每張 Part 2 題目卡對應 3 題） | 153 題 |
+| `speaking_p3.md` | Part 3 討論題（純題目） | 153 題 |
+| `speaking_p3_with_answers.md` | Part 3 討論題 + Band 7 範例答案 | 153 組 Q/A |
 | `topic_vocab.json` | 主題詞彙建議（Band 7+ 高分詞彙） | 51 個主題 × 10-15 詞 |
 | `speaking_p2p3_data/` | Part 2 原始題目與套題策略檔 | 來源資料 |
 
@@ -197,7 +198,8 @@ IELTS_record_ASR/
 ├── speaking_p1.md                  # Part 1 題目與範例答案
 ├── speaking_p2.md                  # Part 2 題目卡（純題目）
 ├── speaking_p2_with_answers.md     # Part 2 題目卡 + Band 7 範例答案
-├── speaking_p3.md                  # Part 3 討論題（每張 Part 2 卡對應 3 題）
+├── speaking_p3.md                  # Part 3 討論題（純題目）
+├── speaking_p3_with_answers.md     # Part 3 討論題 + Band 7 範例答案
 ├── speaking_p2p3_data/             # Part 2 原始題目與套題策略
 │   ├── speaking_p2_q.md
 │   └── speaking_p2_core.md

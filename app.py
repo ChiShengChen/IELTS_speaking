@@ -22,7 +22,7 @@ DRAWN_P2_FILE = BASE_DIR / "drawn_p2.json"
 _PART_FILES = {
     "part1": BASE_DIR / "speaking_p1.md",
     "part2": BASE_DIR / "speaking_p2_with_answers.md",
-    "part3": BASE_DIR / "speaking_p3.md",
+    "part3": BASE_DIR / "speaking_p3_with_answers.md",
 }
 _DRAWN_FILES = {
     "p1": DRAWN_P1_FILE,
@@ -668,11 +668,13 @@ async def export_session_pdf(session_id: str):
 
         p3 = d.get("part3", {})
         if p3:
+            p3_samples = p3.get("sample_answers") or []
             for i, q in enumerate(p3.get("questions", [])):
                 _add_qa(
                     f"Part 3 - Q{i + 1}", q,
                     (p3.get("transcripts") or [])[i] if i < len(p3.get("transcripts", [])) else "-",
                     (p3.get("analyses") or [])[i] if i < len(p3.get("analyses", [])) else {},
+                    p3_samples[i] if i < len(p3_samples) else "",
                 )
 
     elif stype == "mock":
@@ -698,11 +700,13 @@ async def export_session_pdf(session_id: str):
 
         p3 = d.get("part3", {})
         if p3:
+            p3_samples = p3.get("sample_answers") or []
             for i, q in enumerate(p3.get("questions", [])):
                 _add_qa(
                     f"Part 3 - Q{i + 1}", q,
                     (p3.get("transcripts") or [])[i] if i < len(p3.get("transcripts", [])) else "-",
                     (p3.get("analyses") or [])[i] if i < len(p3.get("analyses", [])) else {},
+                    p3_samples[i] if i < len(p3_samples) else "",
                 )
 
     pdf_path = SESSIONS_DIR / f"{session_id}.pdf"
