@@ -78,9 +78,12 @@
     <!-- PART 2/3 SETUP                                               -->
     <!-- ============================================================ -->
     <section id="screen-part2-setup" class="screen">
-      <h2>Part 2 &amp; 3 — Enter Topic</h2>
+      <h2>Part 2 &amp; 3 — Topic Card</h2>
       <textarea id="part2-topic-input" rows="6" placeholder="Paste the topic card here, e.g.&#10;&#10;Describe a book you have recently read.&#10;You should say:&#10;- what the book is&#10;- when you read it&#10;- what it is about&#10;and explain why you liked it."></textarea>
+      <div id="part2-drawn-status"></div>
+      <div id="part2-parsed-preview" class="parsed-preview"></div>
       <div class="setup-actions">
+        <button class="btn btn-secondary" data-action="reshuffle-part2">Reshuffle</button>
         <button class="btn btn-secondary" data-action="random-part2">Random from Bank</button>
         <button class="btn btn-primary" data-action="start-part2">Start Practice</button>
       </div>

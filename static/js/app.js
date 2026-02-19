@@ -57,7 +57,7 @@ document.addEventListener('click', (e) => {
   const handlers = {
     'goto-home':        () => showScreen('home'),
     'goto-part1-setup': () => { showScreen('part1-setup'); autoLoadFile(); },
-    'goto-part2-setup': () => showScreen('part2-setup'),
+    'goto-part2-setup': () => { showScreen('part2-setup'); autoLoadFilePart2(); },
     'goto-bank':        () => { loadBank(); showScreen('bank'); },
     'load-file-part1':  loadFilePart1,
     'random-part1':     randomPart1,
@@ -69,6 +69,8 @@ document.addEventListener('click', (e) => {
     'save-bank':        saveBank,
     'reset-drawn':      resetDrawnHistory,
     'reshuffle-part1':  loadFilePart1,
+    'reset-drawn-part2':  resetDrawnHistoryPart2,
+    'reshuffle-part2':    loadFilePart2,
   };
 
   if (handlers[action]) handlers[action]();
@@ -152,6 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
 let _fileAnswers = {};
 let _allFileParsed = [];  // all questions from the file (for drawn tracking)
 
+// Part 2 file-loaded state
+let _fileAnswersPart2 = {};
+let _allFileParsedPart2 = [];
+let _currentPart2Id = null;  // track which card was loaded for drawn marking
+
 async function autoLoadFile() {
   if ($('#part1-md-input').value.trim()) return;
   await loadFilePart1();
@@ -168,20 +175,18 @@ function _shuffle(arr) {
 
 async function loadFilePart1() {
   try {
-    const res = await fetch('/api/load-file');
+    const res = await fetch('/api/load-file?part=part1');
     if (!res.ok) return;
     const { content } = await res.json();
     const parsed = parseQuestionsMarkdown(content);
 
-    // Store all answers for later reference
     _fileAnswers = {};
     _allFileParsed = parsed;
     parsed.forEach((p) => { if (p.answer) _fileAnswers[p.id] = p.answer; });
 
-    // Fetch drawn history and pick undrawn questions
     let drawnIds = [];
     try {
-      const dRes = await fetch('/api/drawn-history');
+      const dRes = await fetch('/api/drawn-history?part=p1');
       if (dRes.ok) {
         const dData = await dRes.json();
         drawnIds = dData.drawn_ids || [];
@@ -225,16 +230,103 @@ function _showAllDrawnStatus(total) {
 
 async function resetDrawnHistory() {
   try {
-    await fetch('/api/drawn-history', { method: 'DELETE' });
+    await fetch('/api/drawn-history?part=p1', { method: 'DELETE' });
     const el = $('#part1-drawn-status');
     if (el) el.innerHTML = '';
     await loadFilePart1();
   } catch { /* ignore */ }
 }
 
-async function markDrawn(ids) {
+async function markDrawn(ids, part = 'p1') {
   try {
-    await fetch('/api/drawn-history', {
+    await fetch(`/api/drawn-history?part=${part}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+  } catch { /* ignore */ }
+}
+
+// ---------------------------------------------------------------------------
+// Part 2 — Setup (auto-load from speaking_p2_with_answers.md)
+// ---------------------------------------------------------------------------
+async function autoLoadFilePart2() {
+  if ($('#part2-topic-input').value.trim()) return;
+  await loadFilePart2();
+}
+
+async function loadFilePart2() {
+  try {
+    const res = await fetch('/api/load-file?part=part2');
+    if (!res.ok) return;
+    const { content } = await res.json();
+    const parsed = parseQuestionsMarkdown(content);
+
+    _fileAnswersPart2 = {};
+    _allFileParsedPart2 = parsed;
+    parsed.forEach((p) => { if (p.answer) _fileAnswersPart2[p.id] = p.answer; });
+
+    let drawnIds = [];
+    try {
+      const dRes = await fetch('/api/drawn-history?part=p2');
+      if (dRes.ok) {
+        const dData = await dRes.json();
+        drawnIds = dData.drawn_ids || [];
+      }
+    } catch { /* ignore */ }
+
+    const drawnSet = new Set(drawnIds);
+    let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
+
+    if (undrawn.length === 0 && parsed.length > 0) {
+      _showAllDrawnStatusPart2(parsed.length);
+      undrawn = parsed;
+    }
+
+    const selected = _shuffle(undrawn)[0];
+    if (!selected) return;
+
+    _currentPart2Id = selected.id;
+    $('#part2-topic-input').value = selected.question;
+
+    const remaining = parsed.filter((p) => !drawnSet.has(p.id)).length;
+    _renderPart2Preview(selected, { remaining, total: parsed.length });
+  } catch {
+    // file not found — silent
+  }
+}
+
+function _renderPart2Preview(card, drawnInfo) {
+  const el = $('#part2-parsed-preview');
+  if (!el) return;
+  if (!card) { el.innerHTML = ''; return; }
+  let html = `<div class="parsed-summary">Topic Q${card.id}`;
+  if (card.answer) html += ' · has sample answer';
+  if (drawnInfo) html += ` · <span class="drawn-status">${drawnInfo.remaining} remaining / ${drawnInfo.total} total</span>`;
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function _showAllDrawnStatusPart2(total) {
+  const el = $('#part2-drawn-status');
+  if (!el) return;
+  el.innerHTML =
+    `<div class="drawn-all-done">All ${total} topics have been practiced! ` +
+    `<button class="btn btn-ghost btn-small" data-action="reset-drawn-part2">Reset History</button></div>`;
+}
+
+async function resetDrawnHistoryPart2() {
+  try {
+    await fetch('/api/drawn-history?part=p2', { method: 'DELETE' });
+    const el = $('#part2-drawn-status');
+    if (el) el.innerHTML = '';
+    await loadFilePart2();
+  } catch { /* ignore */ }
+}
+
+async function markDrawnPart2(ids) {
+  try {
+    await fetch('/api/drawn-history?part=p2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
@@ -495,7 +587,10 @@ async function finishPart2() {
     return;
   }
 
-  // Save session
+  if (_currentPart2Id) {
+    await markDrawnPart2([_currentPart2Id]);
+  }
+
   await fetch('/api/sessions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -508,6 +603,7 @@ async function finishPart2() {
       transcript: state.part2Transcript.transcript,
       duration: state.part2Transcript.duration,
       analysis: state.part2Transcript.analysis || {},
+      sample_answer: _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '',
     }),
   }).catch(() => {});
 
@@ -664,10 +760,17 @@ function renderResults() {
     const blobUrl = state.part2Recording
       ? URL.createObjectURL(state.part2Recording)
       : null;
+    const sampleAnswer = _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '';
+    const sampleHtml = sampleAnswer
+      ? `<div class="sample-answer">
+           <div class="sample-label">Sample Answer</div>
+           <div class="sample-text">${escapeHtml(sampleAnswer)}</div>
+         </div>`
+      : '';
 
     container.innerHTML += `
       <div class="result-card">
-        <h4>Topic</h4>
+        <h4>Topic${_currentPart2Id ? ` (Q${_currentPart2Id})` : ''}</h4>
         <div class="question-text">${escapeHtml(state.part2Topic)}</div>
       </div>
       <div class="result-card">
@@ -680,6 +783,7 @@ function renderResults() {
         <div class="duration-text">Duration: ${t.duration || 0}s</div>
         ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
         ${buildAnalysisHtml(t.analysis)}
+        ${sampleHtml}
       </div>`;
   }
 
@@ -732,19 +836,22 @@ function buildMarkdown() {
   }
 
   if (state.part2Transcript) {
+    const p2Sample = _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '';
     md += `## IELTS Speaking Part 2 & 3 Practice\nDate: ${now}\n\n`;
     md += `### Topic Card\n${state.part2Topic}\n\n`;
     md += `### My Notes\n${state.part2Notes || '(no notes)'}\n\n`;
     md += `### My Response\n${state.part2Transcript.transcript || '—'}\n`;
     md += `**Duration:** ${state.part2Transcript.duration || 0}s\n`;
     md += buildAnalysisMarkdown(state.part2Transcript.analysis);
+    if (p2Sample) md += `\n### Sample Answer\n${p2Sample}\n`;
     md += `\n---\n\nPlease analyze my Part 2 response for:\n`;
     md += `1. Task achievement (did I cover all bullet points?)\n`;
     md += `2. Fluency and coherence\n`;
     md += `3. Lexical resource\n`;
     md += `4. Grammatical range and accuracy\n`;
-    md += `5. Estimated band score for Part 2\n`;
-    md += `6. Specific suggestions for improvement\n`;
+    if (p2Sample) md += `5. Compare my answer with the sample answer and identify gaps\n`;
+    md += `${p2Sample ? '6' : '5'}. Estimated band score for Part 2\n`;
+    md += `${p2Sample ? '7' : '6'}. Specific suggestions for improvement\n`;
   }
 
   return md;
