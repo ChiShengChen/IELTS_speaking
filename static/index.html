@@ -17,6 +17,7 @@
         <h1>IELTS Speaking</h1>
         <p class="subtitle">Personal Practice System</p>
       </div>
+      <div id="home-stats"></div>
       <div class="home-buttons">
         <button class="btn btn-primary btn-large" data-action="goto-part1-setup">
           <span class="btn-icon">1</span>
@@ -27,6 +28,14 @@
           <span class="btn-icon">2</span>
           Part 2 &amp; 3 Practice
           <span class="btn-desc">2 min notes · 2 min speaking</span>
+        </button>
+        <button class="btn btn-primary btn-large" data-action="start-mock-test">
+          <span class="btn-icon">M</span>
+          Mock Test
+          <span class="btn-desc">Part 1 &rarr; 2 &rarr; 3 · Full simulation</span>
+        </button>
+        <button class="btn btn-secondary" data-action="goto-history">
+          Practice History
         </button>
         <button class="btn btn-secondary" data-action="goto-bank">
           Question Bank
@@ -107,6 +116,7 @@
         <div class="timer-text" id="part2-notes-timer">2:00</div>
       </div>
       <textarea id="part2-notes-area" rows="6" placeholder="Write your notes here…"></textarea>
+      <div id="part2-vocab-panel" class="vocab-panel"></div>
     </section>
 
     <!-- ============================================================ -->
@@ -170,13 +180,23 @@
     <!-- RESULTS                                                      -->
     <!-- ============================================================ -->
     <section id="screen-results" class="screen">
-      <h2>Results</h2>
+      <h2 id="results-title">Results</h2>
       <div id="results-content"></div>
       <div class="results-actions">
         <button class="btn btn-primary" data-action="copy-results">📋 Copy for Claude Analysis</button>
+        <button class="btn btn-secondary" data-action="download-pdf">📄 Download PDF</button>
         <button class="btn btn-secondary" data-action="goto-home">Back to Home</button>
       </div>
       <div class="copy-toast" id="copy-toast">Copied to clipboard!</div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PRACTICE HISTORY                                             -->
+    <!-- ============================================================ -->
+    <section id="screen-history" class="screen">
+      <h2>Practice History</h2>
+      <div id="history-content"></div>
+      <button class="btn btn-ghost" data-action="goto-home">&larr; Back</button>
     </section>
 
     <!-- ============================================================ -->

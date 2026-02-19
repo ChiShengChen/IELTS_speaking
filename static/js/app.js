@@ -11,8 +11,8 @@ import { AudioRecorder, transcribeBlob } from './recorder.js';
 const state = {
   sessionId: null,
   recorder: new AudioRecorder(),
+  mockMode: false,
 
-  // Part 1  — each entry: { id, question, answer }
   part1Parsed: [],
   part1Questions: [],
   part1Answers: [],
@@ -21,7 +21,6 @@ const state = {
   part1Transcripts: [],
   part1Timer: null,
 
-  // Part 2
   part2Topic: '',
   part2Notes: '',
   part2Recording: null,
@@ -29,7 +28,6 @@ const state = {
   part2NotesTimer: null,
   part2SpeakTimer: null,
 
-  // Part 3
   part3Parsed: [],
   part3Questions: [],
   part3Index: 0,
@@ -63,10 +61,12 @@ document.addEventListener('click', (e) => {
 
   const action = btn.dataset.action;
   const handlers = {
-    'goto-home':        () => showScreen('home'),
+    'goto-home':        () => { loadHomeStats(); showScreen('home'); },
     'goto-part1-setup': () => { showScreen('part1-setup'); autoLoadFile(); },
     'goto-part2-setup': () => { showScreen('part2-setup'); autoLoadFilePart2(); },
     'goto-bank':        () => { loadBank(); showScreen('bank'); },
+    'goto-history':     () => { loadHistory(); showScreen('history'); },
+    'start-mock-test':  startMockTest,
     'load-file-part1':  loadFilePart1,
     'random-part1':     randomPart1,
     'start-part1':      startPart1,
@@ -75,6 +75,7 @@ document.addEventListener('click', (e) => {
     'start-part2':      startPart2,
     'skip-part3':       () => advancePart3(),
     'copy-results':     copyResults,
+    'download-pdf':     downloadPdf,
     'save-bank':        saveBank,
     'reset-drawn':      resetDrawnHistory,
     'reshuffle-part1':  loadFilePart1,
@@ -374,6 +375,97 @@ async function randomPart1() {
 }
 
 // ---------------------------------------------------------------------------
+// Mock Test — Full simulation (Part 1 → 2 → 3)
+// ---------------------------------------------------------------------------
+async function startMockTest() {
+  state.mockMode = true;
+  state.sessionId = generateSessionId();
+
+  state.part1Parsed = [];
+  state.part1Questions = [];
+  state.part1Answers = [];
+  state.part1Recordings = [];
+  state.part1Transcripts = [];
+  state.part2Topic = '';
+  state.part2Notes = '';
+  state.part2Recording = null;
+  state.part2Transcript = null;
+  state.part3Parsed = [];
+  state.part3Questions = [];
+  state.part3Recordings = [];
+  state.part3Transcripts = [];
+
+  try {
+    const [p1Res, p2Res, p3Res] = await Promise.all([
+      fetch('/api/load-file?part=part1').then((r) => r.ok ? r.json() : null),
+      fetch('/api/load-file?part=part2').then((r) => r.ok ? r.json() : null),
+      fetch('/api/load-file?part=part3').then((r) => r.ok ? r.json() : null),
+    ]);
+
+    if (!p1Res?.content || !p2Res?.content) {
+      alert('Mock test requires speaking_p1.md and speaking_p2_with_answers.md files.');
+      state.mockMode = false;
+      return;
+    }
+
+    const p1All = parseQuestionsMarkdown(p1Res.content);
+    _fileAnswers = {};
+    _allFileParsed = p1All;
+    p1All.forEach((p) => { if (p.answer) _fileAnswers[p.id] = p.answer; });
+
+    const p2All = parseQuestionsMarkdown(p2Res.content);
+    _fileAnswersPart2 = {};
+    _allFileParsedPart2 = p2All;
+    p2All.forEach((p) => { if (p.answer) _fileAnswersPart2[p.id] = p.answer; });
+
+    if (p3Res?.content) {
+      _part3AllParsed = parseQuestionsMarkdown(p3Res.content);
+    }
+
+    let [drawnP1, drawnP2] = [[], []];
+    try {
+      const [d1, d2] = await Promise.all([
+        fetch('/api/drawn-history?part=p1').then((r) => r.ok ? r.json() : { drawn_ids: [] }),
+        fetch('/api/drawn-history?part=p2').then((r) => r.ok ? r.json() : { drawn_ids: [] }),
+      ]);
+      drawnP1 = d1.drawn_ids || [];
+      drawnP2 = d2.drawn_ids || [];
+    } catch { /* ignore */ }
+
+    const p1Set = new Set(drawnP1);
+    let p1Undrawn = p1All.filter((p) => !p1Set.has(p.id));
+    if (p1Undrawn.length < 5) p1Undrawn = p1All;
+    const p1Selected = _shuffle(p1Undrawn).slice(0, 5);
+
+    state.part1Parsed = p1Selected;
+    state.part1Questions = p1Selected.map((p) => p.question);
+    state.part1Answers = p1Selected.map((p) => p.answer || _fileAnswers[p.id] || '');
+    state.part1Index = 0;
+
+    const p2Set = new Set(drawnP2);
+    let p2Undrawn = p2All.filter((p) => !p2Set.has(p.id));
+    if (p2Undrawn.length === 0) p2Undrawn = p2All;
+    const p2Selected = _shuffle(p2Undrawn)[0];
+    _currentPart2Id = p2Selected.id;
+    state.part2Topic = p2Selected.question;
+
+    try {
+      await state.recorder.init();
+    } catch {
+      alert('Microphone access denied.');
+      state.mockMode = false;
+      return;
+    }
+
+    showScreen('part1-practice');
+    runPart1Question();
+  } catch (err) {
+    alert('Failed to start mock test: ' + err.message);
+    state.mockMode = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Part 1 — Practice flow
 // ---------------------------------------------------------------------------
 async function startPart1() {
@@ -383,6 +475,7 @@ async function startPart1() {
     return;
   }
 
+  state.mockMode = false;
   state.part1Parsed = parsed;
   state.part1Questions = parsed.map((p) => p.question);
   state.part1Answers = parsed.map((p) => p.answer || _fileAnswers[p.id] || '');
@@ -457,7 +550,6 @@ async function finishPart1() {
   showScreen('processing');
   $('#processing-status').textContent = 'Transcribing audio… this may take a moment';
 
-  // Transcribe all in parallel
   const promises = state.part1Recordings.map((blob, i) =>
     transcribeBlob(blob, state.sessionId, `part1_q${i + 1}`),
   );
@@ -472,6 +564,11 @@ async function finishPart1() {
 
   const practicedIds = state.part1Parsed.map((p) => p.id);
   await markDrawn(practicedIds);
+
+  if (state.mockMode) {
+    mockTransitionToPart2();
+    return;
+  }
 
   await fetch('/api/sessions', {
     method: 'POST',
@@ -489,6 +586,31 @@ async function finishPart1() {
   }).catch(() => {});
 
   renderResults();
+}
+
+function mockTransitionToPart2() {
+  state.part2Notes = '';
+  state.part2Recording = null;
+  state.part2Transcript = null;
+
+  $('#part2-topic-display').textContent = state.part2Topic;
+  $('#part2-notes-area').value = '';
+
+  const topicNum = _currentPart2Id ? _currentPart2Id.split('-')[0] : null;
+  loadVocabForTopic(topicNum);
+
+  showScreen('part2-notes');
+
+  state.part2NotesTimer = new Timer(
+    120,
+    $('#part2-notes-ring'),
+    $('#part2-notes-timer'),
+    {
+      onWarning: () => playBeep(600, 100),
+      onComplete: () => startPart2Speaking(),
+    },
+  );
+  state.part2NotesTimer.start();
 }
 
 // ---------------------------------------------------------------------------
@@ -519,19 +641,21 @@ async function startPart2() {
     return;
   }
 
+  state.mockMode = false;
   state.part2Topic = topic;
   state.part2Notes = '';
   state.part2Recording = null;
   state.part2Transcript = null;
   state.sessionId = generateSessionId();
 
-  // Show topic on notes screen
   $('#part2-topic-display').textContent = topic;
   $('#part2-notes-area').value = '';
 
+  const topicNum = _currentPart2Id ? _currentPart2Id.split('-')[0] : null;
+  loadVocabForTopic(topicNum);
+
   showScreen('part2-notes');
 
-  // Start 2-minute notes timer
   state.part2NotesTimer = new Timer(
     120,
     $('#part2-notes-ring'),
@@ -629,6 +753,10 @@ async function transcribeAndFinishPart2() {
 }
 
 async function savePart2Session() {
+  if (state.mockMode) {
+    return saveMockSession();
+  }
+
   const data = {
     session_id: state.sessionId,
     type: 'part2',
@@ -655,6 +783,46 @@ async function savePart2Session() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   }).catch(() => {});
+}
+
+async function saveMockSession() {
+  const data = {
+    session_id: state.sessionId,
+    type: 'mock',
+    created_at: new Date().toISOString(),
+    part1: {
+      questions: state.part1Questions,
+      sample_answers: state.part1Answers,
+      transcripts: state.part1Transcripts.map((t) => t.transcript),
+      durations: state.part1Transcripts.map((t) => t.duration),
+      analyses: state.part1Transcripts.map((t) => t.analysis || {}),
+    },
+    part2: {
+      topic: state.part2Topic,
+      notes: state.part2Notes,
+      transcript: state.part2Transcript.transcript,
+      duration: state.part2Transcript.duration,
+      analysis: state.part2Transcript.analysis || {},
+      sample_answer: _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '',
+    },
+  };
+
+  if (state.part3Transcripts.length > 0) {
+    data.part3 = {
+      questions: state.part3Questions,
+      transcripts: state.part3Transcripts.map((t) => t.transcript),
+      durations: state.part3Transcripts.map((t) => t.duration),
+      analyses: state.part3Transcripts.map((t) => t.analysis || {}),
+    };
+  }
+
+  await fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }).catch(() => {});
+
+  state.mockMode = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -801,7 +969,49 @@ function buildBandHtml(band) {
         <div class="band-label">Grammar</div>
       </div>
     </div>
-    <div class="band-disclaimer">* Estimated from transcript only (pronunciation not assessed)</div>`;
+    <div class="band-disclaimer">* Band scores estimated from transcript text; pronunciation scored separately via Whisper confidence</div>`;
+}
+
+function ratePronunciation(score) {
+  if (score >= 7) return 'good';
+  if (score >= 6) return 'ok';
+  return 'weak';
+}
+
+function buildPronunciationHtml(p) {
+  if (!p || !p.score) return '';
+
+  let lowWordsHtml = '';
+  if (p.low_confidence_words?.length) {
+    const items = p.low_confidence_words
+      .map((w) => `<span class="pronun-word">${escapeHtml(w.word)} <small>(${(w.probability * 100).toFixed(0)}%)</small></span>`)
+      .join(' ');
+    lowWordsHtml = `<div class="pronun-low-words"><span class="metric-label">Unclear words:</span> ${items}</div>`;
+  }
+
+  return `
+    <div class="analysis-section">
+      <div class="analysis-title">Pronunciation (Whisper Confidence)</div>
+      <div class="analysis-grid">
+        <div class="analysis-metric">
+          <span class="metric-label">Clarity</span>
+          <span class="metric-value ${ratePronunciation(p.score)}">${p.clarity}</span>
+        </div>
+        <div class="analysis-metric">
+          <span class="metric-label">Score</span>
+          <span class="metric-value ${ratePronunciation(p.score)}">${p.score}</span>
+        </div>
+        <div class="analysis-metric">
+          <span class="metric-label">Avg confidence</span>
+          <span class="metric-value">${(p.avg_confidence * 100).toFixed(1)}%</span>
+        </div>
+        <div class="analysis-metric">
+          <span class="metric-label">Unclear</span>
+          <span class="metric-value ${p.unclear_count > 3 ? 'weak' : ''}">${p.unclear_count} / ${p.total_words}</span>
+        </div>
+      </div>
+      ${lowWordsHtml}
+    </div>`;
 }
 
 function buildAnalysisHtml(a) {
@@ -858,7 +1068,8 @@ function buildAnalysisHtml(a) {
         </div>
         ${repeatedNote}
       </div>
-    </div>`;
+    </div>
+    ${buildPronunciationHtml(a.pronunciation)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -866,7 +1077,16 @@ function buildAnalysisHtml(a) {
 // ---------------------------------------------------------------------------
 function renderResults() {
   const container = $('#results-content');
-  container.innerHTML = '';
+  const isMock = state.part1Transcripts.length > 0 && state.part2Transcript;
+  const title = $('#results-title');
+  if (title) title.textContent = isMock ? 'Mock Test Results' : 'Results';
+
+  container.innerHTML =
+    `<div class="hl-legend">` +
+    `<span class="hl-leg-filler">Fillers</span>` +
+    `<span class="hl-leg-discourse">Discourse markers</span>` +
+    `<span class="hl-leg-complex">Complex structures</span>` +
+    `</div>`;
 
   if (state.part1Transcripts.length > 0) {
     state.part1Questions.forEach((q, i) => {
@@ -888,7 +1108,7 @@ function renderResults() {
         <div class="result-card">
           <h4>Q${escapeHtml(label)}</h4>
           <div class="question-text">${escapeHtml(q)}</div>
-          <div class="transcript-text">${escapeHtml(t.transcript || '—')}</div>
+          <div class="transcript-text">${highlightTranscript(t.transcript || '—')}</div>
           <div class="duration-text">Duration: ${t.duration || 0}s</div>
           ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
           ${buildAnalysisHtml(t.analysis)}
@@ -921,7 +1141,7 @@ function renderResults() {
       </div>
       <div class="result-card">
         <h4>Part 2 — Your Response</h4>
-        <div class="transcript-text">${escapeHtml(t.transcript || '—')}</div>
+        <div class="transcript-text">${highlightTranscript(t.transcript || '—')}</div>
         <div class="duration-text">Duration: ${t.duration || 0}s</div>
         ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
         ${buildAnalysisHtml(t.analysis)}
@@ -936,20 +1156,158 @@ function renderResults() {
           ? URL.createObjectURL(state.part3Recordings[i])
           : null;
 
-        container.innerHTML += `
-          <div class="result-card">
-            <h4>Part 3 — Q${escapeHtml(p3Label)}</h4>
-            <div class="question-text">${escapeHtml(q)}</div>
-            <div class="transcript-text">${escapeHtml(p3t.transcript || '—')}</div>
-            <div class="duration-text">Duration: ${p3t.duration || 0}s</div>
-            ${p3BlobUrl ? `<audio controls src="${p3BlobUrl}"></audio>` : ''}
-            ${buildAnalysisHtml(p3t.analysis)}
-          </div>`;
+    const coverage = checkBulletCoverage(state.part2Topic, t.transcript);
+    container.innerHTML += `
+      <div class="result-card">
+        <h4>Part 2 — Your Response</h4>
+        <div class="transcript-text">${highlightTranscript(t.transcript || '—')}</div>
+        <div class="duration-text">Duration: ${t.duration || 0}s</div>
+        ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
+        ${buildAnalysisHtml(t.analysis)}
+        ${buildCoverageHtml(coverage)}
+        ${buildVocabUsageHtml(t.transcript)}
+        ${sampleHtml}
+      </div>`;
       });
     }
   }
 
   showScreen('results');
+}
+
+// ---------------------------------------------------------------------------
+// Part 2 Bullet Point Coverage Check
+// ---------------------------------------------------------------------------
+const _STOP_WORDS = new Set([
+  'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+  'should', 'may', 'might', 'shall', 'can', 'to', 'of', 'in', 'for',
+  'on', 'with', 'at', 'by', 'from', 'as', 'into', 'about', 'or', 'and',
+  'but', 'not', 'no', 'if', 'it', 'its', 'this', 'that', 'you', 'your',
+  'he', 'she', 'his', 'her', 'they', 'them', 'their', 'we', 'our',
+  'what', 'when', 'where', 'why', 'how', 'who', 'whom', 'which',
+]);
+
+function extractBulletPoints(topicText) {
+  if (!topicText) return [];
+  const lines = topicText.split('\n');
+  const bullets = [];
+  let inBullets = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^you should say/i.test(trimmed)) {
+      inBullets = true;
+      continue;
+    }
+    if (inBullets) {
+      const bulletMatch = trimmed.match(/^[-•]\s*(.+)$/);
+      const andMatch = trimmed.match(/^and\s+(.+)$/i);
+      if (bulletMatch) {
+        bullets.push(bulletMatch[1].trim().replace(/[.?!]+$/, ''));
+      } else if (andMatch) {
+        bullets.push(andMatch[1].trim().replace(/[.?!]+$/, ''));
+      }
+    }
+  }
+  return bullets;
+}
+
+function extractKeywords(bullet) {
+  return bullet
+    .toLowerCase()
+    .replace(/[.,!?;:'"()]/g, '')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !_STOP_WORDS.has(w));
+}
+
+function checkBulletCoverage(topicText, transcript) {
+  const bullets = extractBulletPoints(topicText);
+  if (bullets.length === 0) return null;
+
+  const lowerTranscript = (transcript || '').toLowerCase();
+  const results = bullets.map((bullet) => {
+    const keywords = extractKeywords(bullet);
+    if (keywords.length === 0) return { bullet, covered: true, matchedKeywords: [], keywords };
+
+    const matched = keywords.filter((kw) => lowerTranscript.includes(kw));
+    const ratio = matched.length / keywords.length;
+    return {
+      bullet,
+      covered: ratio >= 0.4,
+      matchedKeywords: matched,
+      keywords,
+      ratio: Math.round(ratio * 100),
+    };
+  });
+
+  const coveredCount = results.filter((r) => r.covered).length;
+  return { bullets: results, total: results.length, covered: coveredCount };
+}
+
+function buildCoverageHtml(coverage) {
+  if (!coverage) return '';
+
+  const items = coverage.bullets.map((b) => {
+    const icon = b.covered ? '✅' : '❌';
+    const cls = b.covered ? 'cov-yes' : 'cov-no';
+    return `<div class="coverage-item ${cls}">` +
+      `<span class="coverage-icon">${icon}</span>` +
+      `<span class="coverage-text">${escapeHtml(b.bullet)}</span>` +
+      `</div>`;
+  }).join('');
+
+  return `
+    <div class="analysis-section">
+      <div class="analysis-title">Bullet Point Coverage (${coverage.covered}/${coverage.total})</div>
+      <div class="coverage-list">${items}</div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Topic Vocabulary
+// ---------------------------------------------------------------------------
+let _currentVocab = [];
+
+async function loadVocabForTopic(topicNum) {
+  _currentVocab = [];
+  const panel = $('#part2-vocab-panel');
+  if (!panel || !topicNum) { if (panel) panel.innerHTML = ''; return; }
+
+  try {
+    const res = await fetch(`/api/vocab?topic=${topicNum}`);
+    if (!res.ok) { panel.innerHTML = ''; return; }
+    const data = await res.json();
+    _currentVocab = data.vocab || [];
+
+    if (_currentVocab.length === 0) { panel.innerHTML = ''; return; }
+
+    const items = _currentVocab
+      .map((v) => `<span class="vocab-chip">${escapeHtml(v)}</span>`)
+      .join('');
+    panel.innerHTML = `<div class="vocab-title">Suggested Vocabulary (Band 7+)</div><div class="vocab-chips">${items}</div>`;
+  } catch {
+    panel.innerHTML = '';
+  }
+}
+
+function buildVocabUsageHtml(transcript) {
+  if (!_currentVocab.length || !transcript) return '';
+
+  const lower = transcript.toLowerCase();
+  const used = _currentVocab.filter((v) => lower.includes(v.toLowerCase()));
+  const unused = _currentVocab.filter((v) => !lower.includes(v.toLowerCase()));
+
+  if (used.length === 0 && unused.length === 0) return '';
+
+  const usedHtml = used.map((v) => `<span class="vocab-chip vocab-used">${escapeHtml(v)}</span>`).join('');
+  const unusedHtml = unused.map((v) => `<span class="vocab-chip vocab-unused">${escapeHtml(v)}</span>`).join('');
+
+  return `
+    <div class="analysis-section">
+      <div class="analysis-title">Vocabulary Usage (${used.length}/${_currentVocab.length})</div>
+      <div class="vocab-chips">${usedHtml}${unusedHtml}</div>
+    </div>`;
 }
 
 function buildAnalysisMarkdown(a) {
@@ -971,10 +1329,15 @@ function buildAnalysisMarkdown(a) {
 
 function buildMarkdown() {
   const now = new Date().toLocaleString();
+  const isMock = state.part1Transcripts.length > 0 && state.part2Transcript;
   let md = '';
 
+  if (isMock) {
+    md += `# IELTS Speaking Mock Test\nDate: ${now}\n\n`;
+  }
+
   if (state.part1Transcripts.length > 0) {
-    md += `## IELTS Speaking Part 1 Practice\nDate: ${now}\n\n`;
+    md += `## IELTS Speaking Part 1${isMock ? '' : ' Practice'}\n${isMock ? '' : `Date: ${now}\n`}\n`;
     state.part1Questions.forEach((q, i) => {
       const t = state.part1Transcripts[i] || {};
       const answer = state.part1Answers[i] || '';
@@ -999,7 +1362,7 @@ function buildMarkdown() {
 
   if (state.part2Transcript) {
     const p2Sample = _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '';
-    md += `## IELTS Speaking Part 2 & 3 Practice\nDate: ${now}\n\n`;
+    md += `## IELTS Speaking Part 2 & 3${isMock ? '' : ' Practice'}\n${isMock ? '' : `Date: ${now}\n`}\n`;
     md += `### Topic Card\n${state.part2Topic}\n\n`;
     md += `### My Notes\n${state.part2Notes || '(no notes)'}\n\n`;
     md += `### Part 2 — My Response\n${state.part2Transcript.transcript || '—'}\n`;
@@ -1037,6 +1400,24 @@ function buildMarkdown() {
   return md;
 }
 
+async function downloadPdf() {
+  if (!state.sessionId) {
+    alert('No session to export.');
+    return;
+  }
+  try {
+    const url = `/api/sessions/${state.sessionId}/pdf`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ielts_session_${state.sessionId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch {
+    alert('Failed to download PDF.');
+  }
+}
+
 async function copyResults() {
   const md = buildMarkdown();
   try {
@@ -1053,6 +1434,244 @@ async function copyResults() {
     document.execCommand('copy');
     document.body.removeChild(ta);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Home Stats (streak + weakness)
+// ---------------------------------------------------------------------------
+async function loadHomeStats() {
+  const container = $('#home-stats');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/stats');
+    if (!res.ok) { container.innerHTML = ''; return; }
+    const data = await res.json();
+
+    let html = '<div class="home-stats-row">';
+
+    if (data.streak > 0) {
+      html += `<div class="streak-badge">` +
+        `<span class="streak-fire">🔥</span>` +
+        `<span class="streak-count">${data.streak}</span>` +
+        `<span class="streak-label">day${data.streak > 1 ? 's' : ''} streak</span>` +
+        `</div>`;
+    }
+
+    if (data.weakness) {
+      const w = data.weakness;
+      html += `<div class="weakness-alert">` +
+        `<span class="weakness-icon">⚠️</span>` +
+        `<span class="weakness-text">Focus on <span class="weakness-area">${escapeHtml(w.label)}</span>` +
+        ` — avg <span class="weakness-score">${w.avg}</span></span>` +
+        `</div>`;
+    }
+
+    html += '</div>';
+
+    if (data.streak > 0 || data.weakness) {
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = '';
+    }
+  } catch {
+    container.innerHTML = '';
+  }
+}
+
+// Load stats on initial page load
+document.addEventListener('DOMContentLoaded', () => { loadHomeStats(); });
+
+// ---------------------------------------------------------------------------
+// Practice History
+// ---------------------------------------------------------------------------
+async function loadHistory() {
+  const container = $('#history-content');
+  container.innerHTML = '<div class="processing-content"><div class="spinner"></div></div>';
+
+  try {
+    const res = await fetch('/api/sessions?full=true');
+    const { sessions } = await res.json();
+
+    if (!sessions || sessions.length === 0) {
+      container.innerHTML = '<p style="color:var(--text-muted)">No practice sessions yet.</p>';
+      return;
+    }
+
+    const bandDataPoints = extractBandTrend(sessions);
+    let html = '';
+
+    if (bandDataPoints.length >= 2) {
+      html += renderTrendChart(bandDataPoints);
+    }
+
+    html += '<div class="history-list">';
+    for (const s of sessions) {
+      html += renderHistoryCard(s);
+    }
+    html += '</div>';
+
+    container.innerHTML = html;
+  } catch {
+    container.innerHTML = '<p style="color:var(--danger)">Failed to load history.</p>';
+  }
+}
+
+function extractBandTrend(sessions) {
+  const points = [];
+  for (const s of [...sessions].reverse()) {
+    const date = s.created_at ? new Date(s.created_at) : null;
+    if (!date) continue;
+
+    const analyses = [];
+    if (s.type === 'part1' && Array.isArray(s.analyses)) {
+      analyses.push(...s.analyses.filter((a) => a?.band));
+    }
+    if (s.type === 'part2' && s.analysis?.band) {
+      analyses.push(s.analysis);
+    }
+    if (s.part3?.analyses) {
+      analyses.push(...s.part3.analyses.filter((a) => a?.band));
+    }
+
+    if (analyses.length === 0) continue;
+
+    const avg = (key) => {
+      const vals = analyses.map((a) => a.band[key]).filter((v) => v != null);
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    };
+
+    points.push({
+      date,
+      label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      fc: avg('fluency_coherence'),
+      lr: avg('lexical_resource'),
+      gra: avg('grammatical_range'),
+      overall: avg('overall'),
+      type: s.type,
+    });
+  }
+  return points;
+}
+
+function renderTrendChart(points) {
+  const W = 560, H = 200, PAD_L = 40, PAD_R = 20, PAD_T = 20, PAD_B = 35;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  const minBand = 4.0, maxBand = 9.0;
+  const bandRange = maxBand - minBand;
+
+  const xStep = points.length > 1 ? chartW / (points.length - 1) : chartW / 2;
+
+  const toX = (i) => PAD_L + i * xStep;
+  const toY = (val) => PAD_T + chartH - ((val - minBand) / bandRange) * chartH;
+
+  const makeLine = (key, color) => {
+    const pts = points
+      .map((p, i) => p[key] != null ? `${toX(i)},${toY(p[key])}` : null)
+      .filter(Boolean);
+    if (pts.length < 2) return '';
+    return `<polyline fill="none" stroke="${color}" stroke-width="2" points="${pts.join(' ')}" />` +
+      pts.map((pt) => `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="3" fill="${color}" />`).join('');
+  };
+
+  const gridLines = [4, 5, 6, 7, 8, 9].map((b) => {
+    const y = toY(b);
+    return `<line x1="${PAD_L}" y1="${y}" x2="${W - PAD_R}" y2="${y}" stroke="var(--border)" stroke-width="0.5" />` +
+      `<text x="${PAD_L - 8}" y="${y + 4}" fill="var(--text-muted)" font-size="11" text-anchor="end">${b}</text>`;
+  }).join('');
+
+  const xLabels = points.map((p, i) => {
+    if (points.length > 10 && i % 2 !== 0) return '';
+    return `<text x="${toX(i)}" y="${H - 5}" fill="var(--text-muted)" font-size="10" text-anchor="middle">${p.label}</text>`;
+  }).join('');
+
+  return `
+    <div class="trend-chart-wrapper">
+      <div class="trend-chart-title">Band Score Trend</div>
+      <svg class="trend-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+        ${gridLines}
+        ${xLabels}
+        ${makeLine('fc', '#00d4aa')}
+        ${makeLine('lr', '#ffc107')}
+        ${makeLine('gra', '#70a1ff')}
+        ${makeLine('overall', '#e8e8f0')}
+      </svg>
+      <div class="trend-legend">
+        <span style="color:#00d4aa">FC</span>
+        <span style="color:#ffc107">LR</span>
+        <span style="color:#70a1ff">GRA</span>
+        <span style="color:#e8e8f0">Overall</span>
+      </div>
+    </div>`;
+}
+
+function renderHistoryCard(s) {
+  const date = s.created_at
+    ? new Date(s.created_at).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : 'Unknown date';
+
+  const typeLabel = s.type === 'part1' ? 'Part 1' : s.type === 'part2' ? 'Part 2 & 3' : s.type === 'mock' ? 'Mock Test' : s.type || '—';
+
+  let bandHtml = '';
+  const bandData = _getSessionOverallBand(s);
+  if (bandData) {
+    bandHtml = `
+      <div class="history-bands">
+        <span class="hb-item ${bandClass(bandData.overall)}">Overall ${bandData.overall}</span>
+        <span class="hb-item ${bandClass(bandData.fc)}">FC ${bandData.fc}</span>
+        <span class="hb-item ${bandClass(bandData.lr)}">LR ${bandData.lr}</span>
+        <span class="hb-item ${bandClass(bandData.gra)}">GRA ${bandData.gra}</span>
+      </div>`;
+  }
+
+  let detailHtml = '';
+  if (s.type === 'part1' && Array.isArray(s.questions)) {
+    detailHtml = `<div class="history-detail">${s.questions.length} questions</div>`;
+  } else if (s.type === 'part2' && s.topic) {
+    const topicSnip = s.topic.length > 80 ? s.topic.slice(0, 80) + '…' : s.topic;
+    detailHtml = `<div class="history-detail">${escapeHtml(topicSnip)}</div>`;
+  }
+
+  return `
+    <div class="history-card">
+      <div class="history-card-header">
+        <span class="history-type">${typeLabel}</span>
+        <span class="history-date">${date}</span>
+      </div>
+      ${bandHtml}
+      ${detailHtml}
+    </div>`;
+}
+
+function _getSessionOverallBand(s) {
+  const analyses = [];
+  if (s.type === 'part1' && Array.isArray(s.analyses)) {
+    analyses.push(...s.analyses.filter((a) => a?.band));
+  }
+  if (s.type === 'part2' && s.analysis?.band) {
+    analyses.push(s.analysis);
+  }
+  if (s.type === 'mock') {
+    if (Array.isArray(s.part1?.analyses)) analyses.push(...s.part1.analyses.filter((a) => a?.band));
+    if (s.part2?.analysis?.band) analyses.push(s.part2.analysis);
+    if (Array.isArray(s.part3?.analyses)) analyses.push(...s.part3.analyses.filter((a) => a?.band));
+  }
+  if (s.part3?.analyses) {
+    analyses.push(...s.part3.analyses.filter((a) => a?.band));
+  }
+  if (analyses.length === 0) return null;
+
+  const avg = (key) => {
+    const vals = analyses.map((a) => a.band[key]).filter((v) => v != null);
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 2) / 2 : null;
+  };
+
+  return { overall: avg('overall'), fc: avg('fluency_coherence'), lr: avg('lexical_resource'), gra: avg('grammatical_range') };
 }
 
 // ---------------------------------------------------------------------------
@@ -1108,4 +1727,117 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ---------------------------------------------------------------------------
+// Transcript highlighting — fillers (red), discourse (green), complex (blue)
+// ---------------------------------------------------------------------------
+const _HL_FILLER_WORDS = new Set([
+  'um', 'uh', 'er', 'ah', 'hmm', 'like', 'basically', 'actually', 'literally',
+]);
+const _HL_FILLER_PHRASES = ['you know', 'i mean', 'kind of', 'sort of'];
+
+const _HL_DISCOURSE_WORDS = new Set([
+  'however', 'moreover', 'furthermore', 'therefore', 'consequently',
+  'nevertheless', 'besides', 'meanwhile', 'similarly', 'indeed',
+  'certainly', 'obviously', 'clearly', 'fortunately', 'unfortunately',
+  'honestly', 'personally', 'interestingly', 'surprisingly',
+]);
+const _HL_DISCOURSE_PHRASES = [
+  'in addition', 'on the other hand', 'as a result', 'for example',
+  'for instance', 'in contrast', 'in fact', 'as well', 'not only',
+  'on top of that', 'apart from', 'in general', 'to be honest',
+  'in my opinion', 'from my perspective',
+];
+
+const _HL_COMPLEX_WORDS = new Set([
+  'although', 'because', 'since', 'while', 'whereas',
+  'if', 'when', 'unless', 'whether', 'which', 'who', 'whom',
+]);
+
+function highlightTranscript(text) {
+  if (!text || text.startsWith('(')) return escapeHtml(text);
+
+  const lower = text.toLowerCase();
+
+  // Phase 1: find multi-word phrase positions (case-insensitive)
+  const phraseMarks = [];
+  for (const phrase of _HL_FILLER_PHRASES) {
+    let idx = lower.indexOf(phrase);
+    while (idx !== -1) {
+      phraseMarks.push({ start: idx, end: idx + phrase.length, cls: 'hl-filler' });
+      idx = lower.indexOf(phrase, idx + 1);
+    }
+  }
+  for (const phrase of _HL_DISCOURSE_PHRASES) {
+    let idx = lower.indexOf(phrase);
+    while (idx !== -1) {
+      phraseMarks.push({ start: idx, end: idx + phrase.length, cls: 'hl-discourse' });
+      idx = lower.indexOf(phrase, idx + 1);
+    }
+  }
+  phraseMarks.sort((a, b) => a.start - b.start);
+
+  // Phase 2: deduplicate overlapping phrases, mark covered char ranges
+  const covered = new Array(text.length).fill(false);
+  const phraseSpans = [];
+  for (const pm of phraseMarks) {
+    let overlap = false;
+    for (let i = pm.start; i < pm.end; i++) {
+      if (covered[i]) { overlap = true; break; }
+    }
+    if (!overlap) {
+      for (let i = pm.start; i < pm.end; i++) covered[i] = true;
+      phraseSpans.push(pm);
+    }
+  }
+
+  // Phase 3: tokenize preserving whitespace
+  const parts = [];
+  const tokenRe = /(\S+|\s+)/g;
+  let m;
+  while ((m = tokenRe.exec(text)) !== null) {
+    parts.push({ text: m[0], start: m.index });
+  }
+
+  // Phase 4: build highlighted HTML — phrases as whole spans, single words classified
+  let result = '';
+  for (const part of parts) {
+    const pStart = part.start;
+    const pEnd = pStart + part.text.length;
+
+    const phraseHit = phraseSpans.find(
+      (ps) => pStart >= ps.start && pEnd <= ps.end,
+    );
+    if (phraseHit) {
+      const isFirst = parts.findIndex(
+        (p) => p.start >= phraseHit.start && p.start + p.text.length <= phraseHit.end && p.text.trim(),
+      ) === parts.indexOf(part);
+      if (isFirst) {
+        const phraseText = text.slice(phraseHit.start, phraseHit.end);
+        result += `<span class="${phraseHit.cls}">${escapeHtml(phraseText)}</span>`;
+      }
+      continue;
+    }
+
+    if (covered[pStart]) continue;
+
+    const word = part.text.trim().toLowerCase().replace(/[.,!?;:'"()]/g, '');
+    if (!word || !part.text.trim()) {
+      result += escapeHtml(part.text);
+      continue;
+    }
+
+    if (_HL_COMPLEX_WORDS.has(word)) {
+      result += `<span class="hl-complex">${escapeHtml(part.text)}</span>`;
+    } else if (_HL_DISCOURSE_WORDS.has(word)) {
+      result += `<span class="hl-discourse">${escapeHtml(part.text)}</span>`;
+    } else if (_HL_FILLER_WORDS.has(word)) {
+      result += `<span class="hl-filler">${escapeHtml(part.text)}</span>`;
+    } else {
+      result += escapeHtml(part.text);
+    }
+  }
+
+  return result;
 }

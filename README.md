@@ -12,6 +12,14 @@
 - **IELTS 分數估算**：根據轉寫文本自動估算 Fluency & Coherence、Lexical Resource、Grammatical Range 與 Overall Band Score。
 - **範例答案對照**：Part 1 與 Part 2 結果頁面皆顯示範例答案，方便與自己的回答進行比較。
 - **結果匯出**：一鍵複製 Markdown 格式結果（含轉寫、範例答案、分析指標與分數估算），可直接貼入 Claude 或 ChatGPT 進行深度分析。
+- **完整模擬測驗 (Mock Test)**：一鍵啟動 Part 1 → Part 2 → Part 3 連續模擬測驗，自動抽題、計時、錄音，結束後顯示所有部分的綜合成績。
+- **練習歷史儀表板**：查看所有過往練習紀錄，包含各項 Band Score 與 SVG 趨勢圖（FC / LR / GRA / Overall 隨時間變化）。
+- **轉寫文本高亮標記**：結果頁面的逐字稿自動以顏色標示語言品質：<span style="color:red">紅色</span>=填充詞 (fillers)、<span style="color:green">綠色</span>=篇章標記 (discourse markers)、<span style="color:blue">藍色</span>=複雜句型 (complex structures)。
+- **弱項追蹤與練習 Streak**：首頁顯示連續練習天數 (🔥 streak) 及最弱評分項目提醒，幫助針對性加強。
+- **發音初步評估**：利用 Whisper word-level timestamps 與 confidence scores，計算發音清晰度分數並標記低信心度詞彙。
+- **Part 2 要點覆蓋檢查**：自動解析題目卡 "You should say" 的 bullet points，檢查逐字稿是否涵蓋每個要點（✅ / ❌）。
+- **主題詞彙建議**：Part 2 筆記階段顯示該主題 10-15 個 Band 7+ 高分詞彙建議（`topic_vocab.json`），結果頁面標示實際使用了哪些。
+- **PDF 匯出**：一鍵下載練習紀錄 PDF 報告（含題目、逐字稿、分析指標、Band Score），方便分享給老師。
 - **題庫管理**：分開管理 Part 1 與 Part 2 題目，支援隨機抽題。
 
 ## 題庫內容
@@ -22,6 +30,7 @@
 | `speaking_p2.md` | Part 2 題目卡（純題目） | 51 張題目卡 |
 | `speaking_p2_with_answers.md` | Part 2 題目卡 + Band 7 範例答案 | 51 組 Q/A |
 | `speaking_p3.md` | Part 3 討論題（每張 Part 2 題目卡對應 3 題） | 153 題 |
+| `topic_vocab.json` | 主題詞彙建議（Band 7+ 高分詞彙） | 51 個主題 × 10-15 詞 |
 | `speaking_p2p3_data/` | Part 2 原始題目與套題策略檔 | 來源資料 |
 
 ## 安裝
@@ -96,10 +105,40 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 
 > 若手動輸入題目卡（非從檔案載入），Part 3 將自動跳過，僅進行 Part 2 練習。
 
+### 完整模擬測驗 (Mock Test)
+
+模擬真實 IELTS 口說測驗的完整流程（約 11–14 分鐘）：
+
+1. 點選 **Mock Test**。
+2. 系統自動從題庫抽取 Part 1（5 題）與 Part 2（1 張題目卡），優先選取未練習過的題目。
+3. 開始後依序進行：
+   - **Part 1**：5 題，每題 45 秒。
+   - **Part 2**：2 分鐘筆記 + 2 分鐘獨白。
+   - **Part 3**：3 題討論題，每題 60 秒。
+4. 全程不中斷，各階段自動銜接。
+5. 結束後顯示 **Mock Test Results**，包含所有 Part 的逐字稿、分析與分數。
+6. 匯出 Markdown 時會標示為完整模擬測驗格式。
+
 ### 結果頁面
 
-- 顯示 Part 2 回答（含範例答案對照）與 Part 3 各題回答，每段皆含逐字稿、錄音回放、語音分析指標與 IELTS 分數估算。
-- 點選 **Copy for Claude Analysis** 即可複製完整 Markdown 格式內容（Part 2 + Part 3 + 範例答案），貼進 Claude 取得詳細評分建議。
+- 顯示各 Part 回答，每段皆含逐字稿（含高亮標記）、錄音回放、語音分析指標與 IELTS 分數估算。
+- 逐字稿自動高亮：紅色=填充詞、綠色=篇章標記、藍色=複雜句型。
+- **發音評估**：顯示 Whisper 信心度分數、清晰度等級，以及低信心度詞彙清單。
+- **Part 2 要點覆蓋**：自動檢查回答是否涵蓋題目卡的每個 bullet point（✅ 已覆蓋 / ❌ 遺漏）。
+- **詞彙使用**：標示 Part 2 回答中實際使用了哪些建議高分詞彙（綠色=使用、灰色=未使用）。
+- 點選 **Copy for Claude Analysis** 即可複製完整 Markdown 格式內容，貼進 Claude 取得詳細評分建議。
+- 點選 **Download PDF** 即可下載該次練習的 PDF 報告。
+
+### 首頁統計
+
+- **練習 Streak**：首頁顯示連續練習天數（🔥 N days），鼓勵每日練習。
+- **弱項提醒**：系統自動計算歷次練習中 FC / LR / GRA 的平均分數，在首頁標示最弱項目及其平均分數，方便針對性加強。
+
+### 練習歷史
+
+1. 在首頁點選 **Practice History**。
+2. 若有 2 筆以上練習紀錄，頂部會顯示 Band Score 趨勢圖（FC / LR / GRA / Overall）。
+3. 下方列出所有練習紀錄，包含日期、類型與各項 Band Score。
 
 ### 題庫管理
 
@@ -119,6 +158,8 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 | Discourse Markers | 篇章標記 (however, in addition 等) | 每段至少 1-2 個 |
 | Complex Structures | 複雜句型標記 (although, because, which 等) | 越多代表文法範圍越廣 |
 | Repeated Words | 連續重複的詞 | 應為 0 |
+| Pronunciation Clarity | Whisper 信心度（越高代表發音越清楚） | avg ≥ 85% |
+| Unclear Words | 信心度低於 50% 的詞彙 | 越少越好 |
 
 ## IELTS 分數估算說明
 
@@ -131,15 +172,28 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 | Grammatical Range (GRA) | 複雜句型標記數、平均句長、重複詞扣分 |
 | Overall | 三項平均，四捨五入至 0.5 |
 
-*注意：此分數僅為基於文本的粗略估算，不包含發音評分。*
+*注意：FC / LR / GRA 為基於轉寫文本的估算；發音分數另由 Whisper confidence scores 獨立評估。*
+
+## 轉寫高亮標記說明
+
+結果頁面的逐字稿會自動以顏色標示以下三類詞彙：
+
+| 顏色 | 類別 | 範例 |
+| :--- | :--- | :--- |
+| 🔴 紅色 | 填充詞 (Fillers) | um, uh, like, basically, you know, I mean, kind of |
+| 🟢 綠色 | 篇章標記 (Discourse Markers) | however, moreover, in addition, on the other hand |
+| 🔵 藍色 | 複雜句型 (Complex Structures) | although, because, while, which, who, unless |
+
+若某詞同時屬於篇章標記與複雜句型（如 although, because），優先以藍色（複雜句型）標示。
 
 ## 專案結構
 
 ```text
 IELTS_record_ASR/
-├── app.py                          # FastAPI 後端 + Whisper ASR + 語音分析 + 分數估算
+├── app.py                          # FastAPI 後端 + Whisper ASR + 語音分析 + 分數估算 + PDF 匯出
 ├── requirements.txt
 ├── README.md
+├── topic_vocab.json                # 主題詞彙建議（51 主題 × 10-15 Band 7+ 詞彙）
 ├── speaking_p1.md                  # Part 1 題目與範例答案
 ├── speaking_p2.md                  # Part 2 題目卡（純題目）
 ├── speaking_p2_with_answers.md     # Part 2 題目卡 + Band 7 範例答案
