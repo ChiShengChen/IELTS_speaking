@@ -825,6 +825,7 @@ async function savePart2Session() {
     type: 'part2',
     created_at: new Date().toISOString(),
     topic: state.part2Topic,
+    topic_id: _currentPart2Id || '',
     notes: state.part2Notes,
     transcript: state.part2Transcript.transcript,
     duration: state.part2Transcript.duration,
@@ -863,6 +864,7 @@ async function saveMockSession() {
     },
     part2: {
       topic: state.part2Topic,
+      topic_id: _currentPart2Id || '',
       notes: state.part2Notes,
       transcript: state.part2Transcript.transcript,
       duration: state.part2Transcript.duration,
@@ -1857,11 +1859,43 @@ async function viewSessionDetail(sessionId) {
         ? `<div class="sample-answer"><div class="sample-label">Sample Answer</div><div class="sample-text">${escapeHtml(p2Sample)}</div></div>`
         : '';
 
+      const p2Coverage = checkBulletCoverage(p2Topic, p2Transcript);
+
+      let vocabHtml = '';
+      let p2TopicNum = '';
+      const p2TopicId = s.type === 'mock' ? (s.part2?.topic_id || '') : (s.topic_id || '');
+      if (p2TopicId) {
+        p2TopicNum = p2TopicId.split('-')[0];
+      } else if (_allFileParsedPart2.length > 0) {
+        const topicStart = p2Topic.split('\n')[0].trim().toLowerCase();
+        const match = _allFileParsedPart2.find((p) => p.question.split('\n')[0].trim().toLowerCase() === topicStart);
+        if (match) p2TopicNum = match.id.split('-')[0];
+      }
+      if (p2TopicNum) {
+        try {
+          const vocabRes = await fetch(`/api/vocab?topic=${p2TopicNum}`);
+          if (vocabRes.ok) {
+            const vocabData = await vocabRes.json();
+            const vocabItems = vocabData.vocab || [];
+            if (vocabItems.length > 0 && p2Transcript) {
+              const lower = p2Transcript.toLowerCase();
+              const used = vocabItems.filter((v) => lower.includes(v.toLowerCase()));
+              const unused = vocabItems.filter((v) => !lower.includes(v.toLowerCase()));
+              const usedChips = used.map((v) => `<span class="vocab-chip vocab-used">${escapeHtml(v)}</span>`).join('');
+              const unusedChips = unused.map((v) => `<span class="vocab-chip vocab-unused">${escapeHtml(v)}</span>`).join('');
+              vocabHtml = `<div class="analysis-section"><div class="analysis-title">Vocabulary Usage (${used.length}/${vocabItems.length})</div><div class="vocab-chips">${usedChips}${unusedChips}</div></div>`;
+            }
+          }
+        } catch {}
+      }
+
       html += `<div class="result-card">
         <h4>Part 2 — Your Response</h4>
         <div class="transcript-text">${highlightTranscript(p2Transcript || '—')}</div>
         <div class="duration-text">Duration: ${s.type === 'mock' ? (s.part2?.duration || 0) : (s.duration || 0)}s</div>
         ${buildAnalysisHtml(p2Analysis)}
+        ${buildCoverageHtml(p2Coverage)}
+        ${vocabHtml}
         ${p2SampleHtml}
       </div>`;
     }
