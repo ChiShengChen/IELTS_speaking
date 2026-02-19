@@ -1446,6 +1446,11 @@ function buildMarkdown() {
     md += `5. Compare my answer with the sample answer and identify gaps\n`;
     md += `6. Estimated band score for Part 1\n`;
     md += `7. Specific suggestions for improvement\n`;
+    md += `\n**以 IELTS Band 7 為標準，請針對每個回答：**\n`;
+    md += `- 逐句標出文法錯誤、用詞不當、搭配不自然之處，並提供修正後的句子\n`;
+    md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
+    md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
+    md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
   }
 
   if (state.part2Transcript) {
@@ -1485,6 +1490,13 @@ function buildMarkdown() {
     const m = state.part3Transcripts.length > 0 ? n + 1 : n;
     md += `${m}. Estimated band score for Part 2 & 3\n`;
     md += `${m + 1}. Specific suggestions for improvement\n`;
+    md += `\n**以 IELTS Band 7 為標準，請針對每個回答：**\n`;
+    md += `- 逐句標出文法錯誤、用詞不當、搭配不自然之處，並提供修正後的句子\n`;
+    md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
+    md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
+    md += `- Part 2：檢查是否遺漏 bullet points，並示範如何自然地涵蓋所有要點\n`;
+    md += `- Part 3：檢查論點是否有深度，是否有正反論述，建議如何強化論證\n`;
+    md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
   }
 
   return md;
@@ -2040,6 +2052,11 @@ function buildHistoryMarkdown(s) {
   md += `4. Compare my answer with the sample answer and identify gaps\n`;
   md += `5. Estimated band score\n`;
   md += `6. Specific suggestions for improvement\n`;
+  md += `\n**以 IELTS Band 7 為標準，請針對每個回答：**\n`;
+  md += `- 逐句標出文法錯誤、用詞不當、搭配不自然之處，並提供修正後的句子\n`;
+  md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
+  md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
+  md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
   return md;
 }
 
