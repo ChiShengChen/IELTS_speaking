@@ -125,6 +125,8 @@ document.addEventListener('click', (e) => {
     'download-pdf':     downloadPdf,
     'save-bank':        saveBank,
     'reset-drawn':      resetDrawnHistory,
+    'set-p1-mode-topic': () => setP1DrawMode('topic'),
+    'set-p1-mode-random': () => setP1DrawMode('random'),
     'reshuffle-part1':  loadFilePart1,
     'reset-drawn-part2':  resetDrawnHistoryPart2,
     'reshuffle-part2':    loadFilePart2,
@@ -183,7 +185,8 @@ function renderParsedPreview(parsed, drawnInfo) {
   const withAnswer = parsed.filter((p) => p.answer).length;
   let summaryExtra = withAnswer ? ` · ${withAnswer} with sample answers` : '';
   if (drawnInfo) {
-    summaryExtra += ` · <span class="drawn-status">${drawnInfo.remaining} remaining / ${drawnInfo.total} total</span>`;
+    const unit = drawnInfo.unit || 'questions';
+    summaryExtra += ` · <span class="drawn-status">${drawnInfo.remaining} ${unit} remaining / ${drawnInfo.total} total</span>`;
   }
   el.innerHTML =
     `<div class="parsed-summary">${parsed.length} questions selected${summaryExtra}</div>` +
@@ -214,6 +217,26 @@ document.addEventListener('DOMContentLoaded', () => {
 // ---------------------------------------------------------------------------
 let _fileAnswers = {};
 let _allFileParsed = [];  // all questions from the file (for drawn tracking)
+let _p1DrawMode = 'topic';  // 'topic' = one full Qx-* group | 'random' = random 5
+
+function setP1DrawMode(mode) {
+  _p1DrawMode = mode;
+  const btnTopic = $('#btn-mode-topic');
+  const btnRandom = $('#btn-mode-random');
+  if (btnTopic) btnTopic.classList.toggle('active', mode === 'topic');
+  if (btnRandom) btnRandom.classList.toggle('active', mode === 'random');
+  loadFilePart1();
+}
+
+function _groupByTopic(parsed) {
+  const groups = {};
+  for (const p of parsed) {
+    const topic = p.id.split('-')[0];
+    if (!groups[topic]) groups[topic] = [];
+    groups[topic].push(p);
+  }
+  return groups;
+}
 
 // Part 2 file-loaded state
 let _fileAnswersPart2 = {};
@@ -257,37 +280,53 @@ async function loadFilePart1() {
     } catch { /* ignore */ }
 
     const drawnSet = new Set(drawnIds);
-    let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
+    let selected;
 
-    // If all questions have been drawn, show reset prompt
-    if (undrawn.length === 0 && parsed.length > 0) {
-      _showAllDrawnStatus(parsed.length);
-      undrawn = parsed; // fallback: show all for manual pick
+    if (_p1DrawMode === 'topic') {
+      const groups = _groupByTopic(parsed);
+      const topicNums = Object.keys(groups);
+      const drawnTopics = new Set(drawnIds.filter((id) => id.startsWith('topic-')).map((id) => id.replace('topic-', '')));
+      let undrawnTopics = topicNums.filter((t) => !drawnTopics.has(t));
+      if (undrawnTopics.length === 0 && topicNums.length > 0) {
+        _showAllDrawnStatus(topicNums.length, 'topics');
+        undrawnTopics = topicNums;
+      }
+      const chosenTopic = _shuffle(undrawnTopics)[0];
+      selected = chosenTopic ? groups[chosenTopic] : [];
+    } else {
+      let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
+      if (undrawn.length === 0 && parsed.length > 0) {
+        _showAllDrawnStatus(parsed.length, 'questions');
+        undrawn = parsed;
+      }
+      selected = _shuffle(undrawn).slice(0, 5);
     }
-
-    // Randomly select up to 5 undrawn questions
-    const selected = _shuffle(undrawn).slice(0, 5);
 
     const questionsOnly = selected
       .map((p) => `# Q${p.id}:\n${p.question}`)
       .join('\n\n');
     $('#part1-md-input').value = questionsOnly;
 
-    const drawnInfo = {
-      remaining: parsed.filter((p) => !drawnSet.has(p.id)).length,
-      total: parsed.length,
-    };
+    const drawnInfo = _p1DrawMode === 'topic'
+      ? { remaining: _countUndrawnTopics(parsed, drawnIds), total: Object.keys(_groupByTopic(parsed)).length, unit: 'topics' }
+      : { remaining: parsed.filter((p) => !drawnSet.has(p.id)).length, total: parsed.length, unit: 'questions' };
     renderParsedPreview(parseQuestionsMarkdown(questionsOnly), drawnInfo);
   } catch {
     // file not found — silent
   }
 }
 
-function _showAllDrawnStatus(total) {
+function _countUndrawnTopics(parsed, drawnIds) {
+  const allTopics = Object.keys(_groupByTopic(parsed));
+  const drawnTopics = new Set(drawnIds.filter((id) => id.startsWith('topic-')).map((id) => id.replace('topic-', '')));
+  return allTopics.filter((t) => !drawnTopics.has(t)).length;
+}
+
+function _showAllDrawnStatus(total, unit = 'questions') {
   const el = $('#part1-drawn-status');
   if (!el) return;
   el.innerHTML =
-    `<div class="drawn-all-done">All ${total} questions have been practiced! ` +
+    `<div class="drawn-all-done">All ${total} ${unit} have been practiced! ` +
     `<button class="btn btn-ghost btn-small" data-action="reset-drawn">Reset History</button></div>`;
 }
 
@@ -490,10 +529,21 @@ async function startMockTest() {
       drawnP2 = d2.drawn_ids || [];
     } catch { /* ignore */ }
 
-    const p1Set = new Set(drawnP1);
-    let p1Undrawn = p1All.filter((p) => !p1Set.has(p.id));
-    if (p1Undrawn.length < 5) p1Undrawn = p1All;
-    const p1Selected = _shuffle(p1Undrawn).slice(0, 5);
+    let p1Selected;
+    if (_p1DrawMode === 'topic') {
+      const groups = _groupByTopic(p1All);
+      const topicNums = Object.keys(groups);
+      const drawnTopics = new Set(drawnP1.filter((id) => id.startsWith('topic-')).map((id) => id.replace('topic-', '')));
+      let undrawnTopics = topicNums.filter((t) => !drawnTopics.has(t));
+      if (undrawnTopics.length === 0) undrawnTopics = topicNums;
+      const chosenTopic = _shuffle(undrawnTopics)[0];
+      p1Selected = chosenTopic ? groups[chosenTopic] : [];
+    } else {
+      const p1Set = new Set(drawnP1);
+      let p1Undrawn = p1All.filter((p) => !p1Set.has(p.id));
+      if (p1Undrawn.length < 5) p1Undrawn = p1All;
+      p1Selected = _shuffle(p1Undrawn).slice(0, 5);
+    }
 
     state.part1Parsed = p1Selected;
     state.part1Questions = p1Selected.map((p) => p.question);
@@ -627,7 +677,12 @@ async function finishPart1() {
   }
 
   const practicedIds = state.part1Parsed.map((p) => p.id);
-  await markDrawn(practicedIds);
+  if (_p1DrawMode === 'topic' && practicedIds.length > 0) {
+    const topicNum = practicedIds[0].split('-')[0];
+    await markDrawn([`topic-${topicNum}`]);
+  } else {
+    await markDrawn(practicedIds);
+  }
 
   if (state.mockMode) {
     mockTransitionToPart2();

@@ -48,6 +48,10 @@
     <!-- ============================================================ -->
     <section id="screen-part1-setup" class="screen">
       <h2>Part 1 — Paste Questions</h2>
+      <div class="draw-mode-toggle">
+        <button class="btn btn-toggle active" id="btn-mode-topic" data-action="set-p1-mode-topic">By Topic</button>
+        <button class="btn btn-toggle" id="btn-mode-random" data-action="set-p1-mode-random">Random 5</button>
+      </div>
       <textarea id="part1-md-input" rows="12" placeholder="Paste questions in markdown format, e.g.&#10;&#10;# Q1-1:&#10;Do you work or study?&#10;&#10;# A1-1:&#10;I currently work as a software engineer…&#10;&#10;# Q1-2:&#10;What do you enjoy about your job?"></textarea>
       <div id="part1-drawn-status"></div>
       <div id="part1-parsed-preview" class="parsed-preview"></div>
