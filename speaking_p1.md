@@ -616,3 +616,218 @@ I have always wanted to learn Korean. I think Seoul is a fascinating city and Ko
 interesting culture that I would like to explore. Also, a lot of my favourite music is sung in Korean!
 
 
+# Q27-1:
+When you were young, did you have a school bag?
+# A27-1:
+Yes, when I was growing up, I had a school bag. In fact, my parents would get me a new school bag every two
+years or so because they would get old and worn quite quickly. I always loved the bags I would pick out for
+school.
+
+# Q27-2:
+What kind of bag do you use when you go on holiday?
+# A27-2:
+When I go on holiday, I have a very specific bag that I use. Planes have detailed size requirements for the bags
+that you can take as carry on. So, I bought a bag that matches the size dimensions perfectly. It is very useful.
+
+# Q27-3:
+Would you be happy if someone gave you a bag as a gift?
+# A27-3:
+I think bags are very useful and some are fun and interesting, so they make great gifts! I would be overjoyed if
+somebody gave me a cool bag for my birthday one year. It makes both a practical and an exciting gift.
+
+# Q27-4:
+Do you often take your bag with you when you go out now?
+# A27-4:
+I do not leave my house without a bag! It is so useful to have a bag to carry all your things such as your phone,
+your keys, a water bottle, and other necessary items. It is also useful to have a bag incase you buy things and
+need to carry them home.
+
+# Q25-1:
+Is it easy to remember your teachers in elementary school?
+# A25-1:
+Oh, I could never forget the teachers I had in elementary school. Elementary school is such a formative stage
+of a person’s life and the teachers you had you would see every day. My teachers were probably some of the
+most influential people in my childhood.
+
+# Q25-2:
+Did you want to be a teacher when you were young?
+# A25-2:
+Oh no, I never even dreamed of being a teacher when I was growing up. I did not really like school and I did
+not like my teachers either. They always seemed grumpy and stressed, so it was not a job that I thought looked
+fun or exciting.
+
+# Q25-3:
+Do you think teachers are different now than when your parents were at school?
+# A25-3:
+I do not think there have been that many changes to teachers now compared to when my parents were at school.
+The role is much the same. Teachers are just meant to transfer knowledge to their students and keep the class
+in order.
+
+# Q25-4:
+Did you have a favorite teacher at school?
+# A25-4:
+My favourite teacher at school was my math teacher I had in lower school. Math was not the easiest subject for
+me, and I struggled with it a lot. But I had the nicest teacher who took the time to teach me and help me
+understand. They were my favourite.
+
+
+# Q26-1:
+Are there many wild animals in your country?
+# A26-1:
+There is an abundance of wildlife in China! We have animals like the giant panda which are iconic of China.
+But there are also many other wild animals such as elephants, tigers, leopards and monkeys
+
+# Q26-2:
+Have you ever been to a zoo or safari park?
+# A26-2:
+Yes, I have been to many zoos and was even lucky enough to once visit a safari park with my parents. There is
+a zoo in my home city, and growing up I would visit often. Once, my parents took me to the Guangzhou
+Chimelong Safari Park as a reward for doing well in my exams.
+
+# Q26-3:
+Have you seen any shows about wild animals recently?
+# A26-3:
+I don’t really watch TV shows about wild animals, I think they are boring. Most nature documentaries are the
+same, they show predators and prey in their natural environments. It feels too much like a school lesson to me!
+
+
+# Q26-4:
+What kind of animal would you like to see in the wild?
+# A26-4:
+My favourite animal is the giraffe and it is my dream to see one on the wild! I think giraffes are such fascinating
+and unusual creatures. It would be an amazing experience to watch some in the wild and see how they act in
+their natural environment.
+
+
+# Q27-1:
+How often does it rain where you live?
+# A27-1:
+I live in a very wet part of the country, and it rains all the time! Some parts of the world have wet seasons and
+dry seasons but where I live it seems to always be a wet season. I would go as far as to say it rains most days!
+
+# Q27-2:
+Would you like to live somewhere very wet or very dry?
+# A27-2:
+If I had things my way I would live in a very dry place. Living in a wet place is so annoying and you always
+have to remember to carry an umbrella or wear a raincoat. I would like to live in a place that was dry.
+
+# Q27-3:
+Have you ever changed your plans because it rained?
+# A27-3:
+Yes, I frequently have to cancel my plans because it has started raining. Whenever I plan outdoor activities such
+as taking a nice walk or playing sports outside, it is always such a shame to cancel them because of the rain.
+There are some activities you just can’t enjoy in the rain.
+
+# Q27-4:
+Do you enjoy going out in the rain?
+# A27-4:
+It is not fun to be wet and cold, so I do not like going out in the rain. When it is raining, I like to stay inside and
+wrap up warm. It is too much hassle to go out in the rain, I just wait for it to stop.
+
+
+# Q28-1:
+What's your favorite day of the week?
+# A28-1:
+I think Saturday is the best day of the week, I look forward to it all throughout the working week. It is the first
+day of the weekend, so everyone is excited and energetic. The most fun things always happen on a Saturday.
+
+# Q28-2:
+What's your busiest day of the week?
+# A28-2:
+The first day back to work, Monday, is by far the most hectic day of my week. I am always so busy catching
+up with all the things that happened over the weekend. I am exhausted by the end of a Monday.
+
+# Q28-3:
+If you could change what you do each week, what would it be?
+# A28-3:
+If I were to make a change to what I do each week I would give myself an extra day off in the middle of the
+week on Wednesday. I find it so hard to get through the working week and I feel like I do not have enough time
+to relax and socialize.
+
+
+# Q28-4:
+Would you do the same thing on the same day every week?
+# A28-4:
+I would never be able to do the same thing on the same day every week, that would drive me crazy! I hate
+routines and I think that doing the same thing gets boring really quickly. I always need my days to be different
+and full of new things.
+
+
+# Q29-1:
+Is it easy for you to find time to see your friends?
+# A29-1:
+I struggle to make time in my life for hanging out with my friends. I work a job and study which means most
+of my free time is spent looking after myself. After all the cooking and cleaning is done, there isn’t a lot of time
+to socialize.
+
+# Q29-2:
+What do you like to do when you are with your friends?
+# A29-2:
+I do all sorts of different things with my friends, depending on who I am hanging out with. Sometimes we go
+to the cinema, sometimes we go to the arcade, sometimes we go out to eat food at restaurants and street markets.
+There are so many fun things I do with my friends.
+
+# Q29-3:
+Have you known some of your friends for a long time?
+# A29-3:
+To be honest, most of my friends I have only known for a little while. I moved to a new city for university and
+did not have a lot of friends growing up. So, most of my friends I have only know for a year or two.
+
+# Q29-4:
+How important are your friends to you?
+# A29-4:
+I think it is good to have friends, but it is not the most important thing in the world to me. I am more interested
+in my own development and success as a citizen. It is nice to have people to hang out with, but that is not my
+focus in life.
+
+# Q30-1:
+When was the last time you had a day off from work or study?
+# A30-1:
+It has been ages since I last had a day off, it has probably been a month or two. I work a full time job and study
+at the same time, so I do not have a lot of time off. I only get to take a break during public holidays. During the
+week I work, and at the weekends I study.
+
+# Q30-2:
+What do you usually like to do on your break?
+# A30-2:
+During my break I like to do relaxing and fun activities. I try to do things that are low effort such as watching
+comedy videos, listening to podcasts, or having light conversations with my friends and colleagues. It is
+important to relax and switch off during your breaks
+
+# Q30-3:
+What would you do if you had a day off tomorrow?
+# A30-3:
+If I had the day off tomorrow I would catch up with all the chores I normally do at the weekend. I would do my
+laundry and tidy my house. If I had extra time I might even cook a few meals in advance to eat during the week.
+
+# Q30-4:
+Do you prefer to spend a day off with friends or family?
+# A30-4:
+When I have a day off I like to spend it with my family. I do not get a lot of time off and I miss spending time
+with my family very much. So any chance I get, I visit my family and spend the whole day with them.
+
+# Q31-1:
+What's your favourite kind of exercise?
+# A31-1:
+My preferred way of staying in shape are gentle exercises such as jogging or fun things like playing Ping-pong
+with my friends. I think exercise can be part of a normal lifestyle and your day to day activities.
+
+# Q31-2:
+What do you usually do to keep healthy?
+# A31-2:
+To keep healthy I make sure I eat a balanced diet and I try to play a lot of sports with my friends. I avoid fatty
+foods and sugary drinks. I play basketball with my friends twice a week. I find this is enough to stay healthy.
+
+# Q31-3:
+Did you learn about keeping fit at school?
+# A31-3:
+Yes, my school taught us about the importance of staying healthy and keeping fit. We had a lot of sports classes
+and also classes that taught us how to eat well and look after ourselves. School was about keeping our bodies
+strong as well as improving our minds.
+
+# Q31-4:
+How easy is it for people in your country to keep healthy?
+# A31-4:
+I would not say it is easy for people in my country to keep healthy, it takes a lot of discipline. There are so many
+fatty foods and treats that are full of sugar. Also, most people work sat at a computer all day. So, it takes a lot
+of effort and willpower to stay fit.
