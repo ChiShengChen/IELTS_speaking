@@ -393,11 +393,11 @@ async function loadFilePart2() {
 
     const drawnSet = new Set(drawnIds);
     let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
+    if (undrawn.length === 0 && parsed.length > 0) undrawn = parsed;
 
-    if (undrawn.length === 0 && parsed.length > 0) {
-      _showAllDrawnStatusPart2(parsed.length);
-      undrawn = parsed;
-    }
+    const drawnCount = drawnIds.length;
+    const totalCount = parsed.length;
+    _renderDrawnStatusPart2(drawnCount, totalCount);
 
     const selected = _shuffle(undrawn)[0];
     if (!selected) return;
@@ -405,8 +405,7 @@ async function loadFilePart2() {
     _currentPart2Id = selected.id;
     $('#part2-topic-input').value = selected.question;
 
-    const remaining = parsed.filter((p) => !drawnSet.has(p.id)).length;
-    _renderPart2Preview(selected, { remaining, total: parsed.length });
+    _renderPart2Preview(selected, { remaining: totalCount - drawnCount, total: totalCount });
   } catch {
     // file not found — silent
   }
@@ -418,17 +417,22 @@ function _renderPart2Preview(card, drawnInfo) {
   if (!card) { el.innerHTML = ''; return; }
   let html = `<div class="parsed-summary">Topic Q${card.id}`;
   if (card.answer) html += ' · has sample answer';
-  if (drawnInfo) html += ` · <span class="drawn-status">${drawnInfo.remaining} remaining / ${drawnInfo.total} total</span>`;
+  if (drawnInfo) html += ` · <span class="drawn-status">${drawnInfo.remaining} topics remaining / ${drawnInfo.total} total</span>`;
   html += '</div>';
   el.innerHTML = html;
 }
 
-function _showAllDrawnStatusPart2(total) {
+function _renderDrawnStatusPart2(drawnCount, totalCount) {
   const el = $('#part2-drawn-status');
   if (!el) return;
+  const remaining = totalCount - drawnCount;
+  const allDone = remaining <= 0;
   el.innerHTML =
-    `<div class="drawn-all-done">All ${total} topics have been practiced! ` +
-    `<button class="btn btn-ghost btn-small" data-action="reset-drawn-part2">Reset History</button></div>`;
+    `<div class="drawn-status-bar">` +
+      `<span class="drawn-counts">Drawn <strong>${drawnCount}</strong> / Remaining <strong>${remaining}</strong> / Total <strong>${totalCount}</strong> topics</span>` +
+      (allDone ? `<span class="drawn-all-badge">All practiced!</span>` : '') +
+      `<button class="btn btn-ghost btn-small" data-action="reset-drawn-part2">Reset Draw</button>` +
+    `</div>`;
 }
 
 async function resetDrawnHistoryPart2() {
