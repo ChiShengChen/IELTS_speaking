@@ -144,29 +144,65 @@ def _band_round(score: float) -> float:
 
 
 def _estimate_band(m: dict) -> dict:
+    """Estimate IELTS Speaking band scores aligned with official descriptors.
+
+    Calibrated conservatively — transcript-based analysis cannot assess actual
+    pronunciation or detect grammatical errors, so ceilings are capped:
+      FC  max ~7.5  (cannot measure pause/hesitation quality)
+      LR  max ~7.5  (cannot verify collocational accuracy)
+      GRA max ~7.0  (cannot detect actual grammatical errors)
+
+    Official IELTS Band 7 requires:
+      FC:  speaks at length without noticeable effort, uses discourse markers
+      LR:  uses less common vocabulary, some awareness of collocation
+      GRA: range of complex structures, frequently error-free sentences
+    """
     wpm = m["wpm"]
-    if wpm <= 160:
-        wpm_s = _lerp(wpm, 60, 150, 4.0, 8.0)
+    wc = m["word_count"]
+
+    # ── Fluency & Coherence ──────────────────────────────────────────────
+    # Band 7 ≈ 130-160 WPM with natural flow; too fast = rushed/unclear
+    if wpm <= 170:
+        wpm_s = _lerp(wpm, 70, 170, 4.0, 7.5)
     else:
-        wpm_s = _lerp(wpm, 160, 210, 8.0, 5.0)
+        wpm_s = _lerp(wpm, 170, 220, 7.5, 5.5)
 
-    dur_min = m["word_count"] / max(wpm, 1)
+    # Fillers per minute: Band 7 = rare hesitation (<1/min)
+    dur_min = wc / max(wpm, 1)
     fpm = m["filler_count"] / max(dur_min, 0.1)
-    filler_s = _lerp(fpm, 6, 0, 4.0, 8.0)
+    filler_s = _lerp(fpm, 8, 0, 3.5, 7.5)
 
-    disc_s = _lerp(m["discourse_markers"], 0, 4, 5.0, 8.0)
+    # Discourse markers: Band 7 needs consistent, appropriate use (6-8+)
+    disc_s = _lerp(m["discourse_markers"], 0, 10, 4.0, 7.5)
 
-    fc = _band_round(wpm_s * 0.4 + filler_s * 0.35 + disc_s * 0.25)
+    fc = _band_round(wpm_s * 0.35 + filler_s * 0.30 + disc_s * 0.35)
 
-    ttr_s = _lerp(m["vocabulary_diversity"], 0.30, 0.70, 4.0, 8.0)
-    wl_s = _lerp(m["avg_word_length"], 3.0, 5.0, 4.0, 8.0)
-    long_s = _lerp(m["long_word_count"], 0, 8, 4.5, 8.0)
-    lr = _band_round(ttr_s * 0.45 + wl_s * 0.25 + long_s * 0.30)
+    # ── Lexical Resource ─────────────────────────────────────────────────
+    # TTR: Band 7 ≈ 0.55-0.65 (less common / idiomatic items expected)
+    ttr_s = _lerp(m["vocabulary_diversity"], 0.30, 0.75, 4.0, 7.5)
 
-    cx_s = _lerp(m["complex_structures"], 0, 5, 5.0, 8.0)
-    sl_s = _lerp(m["avg_sentence_length"], 5, 20, 4.0, 8.0)
-    rep_penalty = len(m.get("repeated_words", [])) * 0.5
-    gra = _band_round(cx_s * 0.55 + sl_s * 0.45 - rep_penalty)
+    # Average word length: longer words signal sophistication
+    wl_s = _lerp(m["avg_word_length"], 3.5, 5.5, 4.0, 7.5)
+
+    # Long-word ratio (7+ chars / unique): Band 7 ≈ 20-25%
+    unique_count = m.get("unique_words", 1) or 1
+    long_ratio = m["long_word_count"] / unique_count
+    long_s = _lerp(long_ratio, 0.08, 0.30, 4.0, 7.5)
+
+    lr = _band_round(ttr_s * 0.40 + wl_s * 0.25 + long_s * 0.35)
+
+    # ── Grammatical Range & Accuracy ─────────────────────────────────────
+    # Capped at 7.0: transcript analysis cannot detect actual errors
+    # Band 7 needs frequent complex structures (8+) with good accuracy
+    cx_s = _lerp(m["complex_structures"], 0, 12, 4.0, 7.0)
+
+    # Average sentence length: longer = more subordination / complexity
+    sl_s = _lerp(m["avg_sentence_length"], 6, 25, 4.0, 7.0)
+
+    # Repeated consecutive words = self-correction / disfluency
+    rep_penalty = min(len(m.get("repeated_words", [])) * 0.5, 1.5)
+
+    gra = _band_round(cx_s * 0.50 + sl_s * 0.50 - rep_penalty)
 
     overall = _band_round((fc + lr + gra) / 3)
 
