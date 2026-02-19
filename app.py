@@ -22,6 +22,7 @@ DRAWN_P2_FILE = BASE_DIR / "drawn_p2.json"
 _PART_FILES = {
     "part1": BASE_DIR / "speaking_p1.md",
     "part2": BASE_DIR / "speaking_p2_with_answers.md",
+    "part3": BASE_DIR / "speaking_p3.md",
 }
 _DRAWN_FILES = {
     "p1": DRAWN_P1_FILE,
