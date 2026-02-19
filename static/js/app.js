@@ -281,53 +281,53 @@ async function loadFilePart1() {
 
     const drawnSet = new Set(drawnIds);
     let selected;
+    let drawnCount, totalCount, unit;
 
     if (_p1DrawMode === 'topic') {
       const groups = _groupByTopic(parsed);
       const topicNums = Object.keys(groups);
       const drawnTopics = new Set(drawnIds.filter((id) => id.startsWith('topic-')).map((id) => id.replace('topic-', '')));
       let undrawnTopics = topicNums.filter((t) => !drawnTopics.has(t));
-      if (undrawnTopics.length === 0 && topicNums.length > 0) {
-        _showAllDrawnStatus(topicNums.length, 'topics');
-        undrawnTopics = topicNums;
-      }
+      if (undrawnTopics.length === 0 && topicNums.length > 0) undrawnTopics = topicNums;
       const chosenTopic = _shuffle(undrawnTopics)[0];
       selected = chosenTopic ? groups[chosenTopic] : [];
+      drawnCount = drawnTopics.size;
+      totalCount = topicNums.length;
+      unit = 'topics';
     } else {
       let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
-      if (undrawn.length === 0 && parsed.length > 0) {
-        _showAllDrawnStatus(parsed.length, 'questions');
-        undrawn = parsed;
-      }
+      if (undrawn.length === 0 && parsed.length > 0) undrawn = parsed;
       selected = _shuffle(undrawn).slice(0, 5);
+      drawnCount = drawnIds.filter((id) => !id.startsWith('topic-')).length;
+      totalCount = parsed.length;
+      unit = 'questions';
     }
+
+    _renderDrawnStatus(drawnCount, totalCount, unit);
 
     const questionsOnly = selected
       .map((p) => `# Q${p.id}:\n${p.question}`)
       .join('\n\n');
     $('#part1-md-input').value = questionsOnly;
 
-    const drawnInfo = _p1DrawMode === 'topic'
-      ? { remaining: _countUndrawnTopics(parsed, drawnIds), total: Object.keys(_groupByTopic(parsed)).length, unit: 'topics' }
-      : { remaining: parsed.filter((p) => !drawnSet.has(p.id)).length, total: parsed.length, unit: 'questions' };
+    const drawnInfo = { remaining: totalCount - drawnCount, total: totalCount, unit };
     renderParsedPreview(parseQuestionsMarkdown(questionsOnly), drawnInfo);
   } catch {
     // file not found — silent
   }
 }
 
-function _countUndrawnTopics(parsed, drawnIds) {
-  const allTopics = Object.keys(_groupByTopic(parsed));
-  const drawnTopics = new Set(drawnIds.filter((id) => id.startsWith('topic-')).map((id) => id.replace('topic-', '')));
-  return allTopics.filter((t) => !drawnTopics.has(t)).length;
-}
-
-function _showAllDrawnStatus(total, unit = 'questions') {
+function _renderDrawnStatus(drawnCount, totalCount, unit) {
   const el = $('#part1-drawn-status');
   if (!el) return;
+  const remaining = totalCount - drawnCount;
+  const allDone = remaining <= 0;
   el.innerHTML =
-    `<div class="drawn-all-done">All ${total} ${unit} have been practiced! ` +
-    `<button class="btn btn-ghost btn-small" data-action="reset-drawn">Reset History</button></div>`;
+    `<div class="drawn-status-bar">` +
+      `<span class="drawn-counts">Drawn <strong>${drawnCount}</strong> / Remaining <strong>${remaining}</strong> / Total <strong>${totalCount}</strong> ${unit}</span>` +
+      (allDone ? `<span class="drawn-all-badge">All practiced!</span>` : '') +
+      `<button class="btn btn-ghost btn-small" data-action="reset-drawn">Reset Draw</button>` +
+    `</div>`;
 }
 
 async function resetDrawnHistory() {
