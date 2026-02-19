@@ -28,6 +28,14 @@ const state = {
   part2Transcript: null,
   part2NotesTimer: null,
   part2SpeakTimer: null,
+
+  // Part 3
+  part3Parsed: [],
+  part3Questions: [],
+  part3Index: 0,
+  part3Recordings: [],
+  part3Transcripts: [],
+  part3Timer: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -65,6 +73,7 @@ document.addEventListener('click', (e) => {
     'skip-part1':       () => advancePart1(),
     'random-part2':     randomPart2,
     'start-part2':      startPart2,
+    'skip-part3':       () => advancePart3(),
     'copy-results':     copyResults,
     'save-bank':        saveBank,
     'reset-drawn':      resetDrawnHistory,
@@ -157,7 +166,8 @@ let _allFileParsed = [];  // all questions from the file (for drawn tracking)
 // Part 2 file-loaded state
 let _fileAnswersPart2 = {};
 let _allFileParsedPart2 = [];
-let _currentPart2Id = null;  // track which card was loaded for drawn marking
+let _currentPart2Id = null;
+let _part3AllParsed = [];
 
 async function autoLoadFile() {
   if ($('#part1-md-input').value.trim()) return;
@@ -251,8 +261,18 @@ async function markDrawn(ids, part = 'p1') {
 // Part 2 — Setup (auto-load from speaking_p2_with_answers.md)
 // ---------------------------------------------------------------------------
 async function autoLoadFilePart2() {
+  preloadPart3();
   if ($('#part2-topic-input').value.trim()) return;
   await loadFilePart2();
+}
+
+async function preloadPart3() {
+  try {
+    const res = await fetch('/api/load-file?part=part3');
+    if (!res.ok) return;
+    const { content } = await res.json();
+    _part3AllParsed = parseQuestionsMarkdown(content);
+  } catch { /* ignore */ }
 }
 
 async function loadFilePart2() {
@@ -572,12 +592,29 @@ async function finishPart2() {
   }
   state.part2Recording = blob;
 
+  if (_currentPart2Id) {
+    await markDrawnPart2([_currentPart2Id]);
+  }
+
+  const topicNum = _currentPart2Id ? _currentPart2Id.split('-')[0] : null;
+  const part3Qs = topicNum
+    ? _part3AllParsed.filter((p) => p.id.startsWith(topicNum + '-'))
+    : [];
+
+  if (part3Qs.length > 0) {
+    startPart3(part3Qs);
+  } else {
+    await transcribeAndFinishPart2();
+  }
+}
+
+async function transcribeAndFinishPart2() {
   showScreen('processing');
   $('#processing-status').textContent = 'Transcribing your response…';
 
   try {
     state.part2Transcript = await transcribeBlob(
-      blob,
+      state.part2Recording,
       state.sessionId,
       'part2_speaking',
     );
@@ -587,26 +624,131 @@ async function finishPart2() {
     return;
   }
 
-  if (_currentPart2Id) {
-    await markDrawnPart2([_currentPart2Id]);
+  await savePart2Session();
+  renderResults();
+}
+
+async function savePart2Session() {
+  const data = {
+    session_id: state.sessionId,
+    type: 'part2',
+    created_at: new Date().toISOString(),
+    topic: state.part2Topic,
+    notes: state.part2Notes,
+    transcript: state.part2Transcript.transcript,
+    duration: state.part2Transcript.duration,
+    analysis: state.part2Transcript.analysis || {},
+    sample_answer: _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '',
+  };
+
+  if (state.part3Transcripts.length > 0) {
+    data.part3 = {
+      questions: state.part3Questions,
+      transcripts: state.part3Transcripts.map((t) => t.transcript),
+      durations: state.part3Transcripts.map((t) => t.duration),
+      analyses: state.part3Transcripts.map((t) => t.analysis || {}),
+    };
   }
 
   await fetch('/api/sessions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      session_id: state.sessionId,
-      type: 'part2',
-      created_at: new Date().toISOString(),
-      topic: state.part2Topic,
-      notes: state.part2Notes,
-      transcript: state.part2Transcript.transcript,
-      duration: state.part2Transcript.duration,
-      analysis: state.part2Transcript.analysis || {},
-      sample_answer: _currentPart2Id ? (_fileAnswersPart2[_currentPart2Id] || '') : '',
-    }),
+    body: JSON.stringify(data),
   }).catch(() => {});
+}
 
+// ---------------------------------------------------------------------------
+// Part 3 — Practice flow
+// ---------------------------------------------------------------------------
+async function startPart3(questions) {
+  state.part3Parsed = questions;
+  state.part3Questions = questions.map((q) => q.question);
+  state.part3Index = 0;
+  state.part3Recordings = [];
+  state.part3Transcripts = [];
+
+  try {
+    await state.recorder.init();
+  } catch {
+    alert('Microphone access denied.');
+    await transcribeAndFinishPart2();
+    return;
+  }
+
+  showScreen('part3-practice');
+  runPart3Question();
+}
+
+function runPart3Question() {
+  const idx = state.part3Index;
+  const total = state.part3Questions.length;
+  const q = state.part3Questions[idx];
+
+  $('#part3-counter').textContent = `Q${idx + 1} / ${total}`;
+  $('#part3-question-text').textContent = q;
+  $('#part3-rec-badge').classList.add('active');
+
+  state.recorder.start();
+
+  state.part3Timer = new Timer(
+    60,
+    $('#part3-ring'),
+    $('#part3-timer-text'),
+    {
+      onWarning: () => playBeep(600, 100),
+      onComplete: () => advancePart3(),
+    },
+  );
+  state.part3Timer.start();
+}
+
+async function advancePart3() {
+  if (state.part3Timer) state.part3Timer.stop();
+  $('#part3-rec-badge').classList.remove('active');
+
+  let blob;
+  try {
+    blob = await state.recorder.stop();
+  } catch {
+    blob = new Blob([], { type: 'audio/webm' });
+  }
+  state.part3Recordings.push(blob);
+
+  state.part3Index++;
+
+  if (state.part3Index < state.part3Questions.length) {
+    state.part3Timer.reset(60);
+    runPart3Question();
+  } else {
+    finishPart3();
+  }
+}
+
+async function finishPart3() {
+  showScreen('processing');
+  $('#processing-status').textContent = 'Transcribing Part 2 & 3 responses…';
+
+  const part2Promise = transcribeBlob(
+    state.part2Recording,
+    state.sessionId,
+    'part2_speaking',
+  );
+
+  const part3Promises = state.part3Recordings.map((blob, i) =>
+    transcribeBlob(blob, state.sessionId, `part3_q${i + 1}`),
+  );
+
+  try {
+    const [p2Result, ...p3Results] = await Promise.all([part2Promise, ...part3Promises]);
+    state.part2Transcript = p2Result;
+    state.part3Transcripts = p3Results;
+  } catch (err) {
+    alert('Transcription failed: ' + err.message);
+    showScreen('home');
+    return;
+  }
+
+  await savePart2Session();
   renderResults();
 }
 
@@ -778,13 +920,33 @@ function renderResults() {
         <div class="transcript-text">${escapeHtml(state.part2Notes || '(no notes)')}</div>
       </div>
       <div class="result-card">
-        <h4>Your Response</h4>
+        <h4>Part 2 — Your Response</h4>
         <div class="transcript-text">${escapeHtml(t.transcript || '—')}</div>
         <div class="duration-text">Duration: ${t.duration || 0}s</div>
         ${blobUrl ? `<audio controls src="${blobUrl}"></audio>` : ''}
         ${buildAnalysisHtml(t.analysis)}
         ${sampleHtml}
       </div>`;
+
+    if (state.part3Transcripts.length > 0) {
+      state.part3Questions.forEach((q, i) => {
+        const p3t = state.part3Transcripts[i] || {};
+        const p3Label = state.part3Parsed[i]?.id || `${i + 1}`;
+        const p3BlobUrl = state.part3Recordings[i]
+          ? URL.createObjectURL(state.part3Recordings[i])
+          : null;
+
+        container.innerHTML += `
+          <div class="result-card">
+            <h4>Part 3 — Q${escapeHtml(p3Label)}</h4>
+            <div class="question-text">${escapeHtml(q)}</div>
+            <div class="transcript-text">${escapeHtml(p3t.transcript || '—')}</div>
+            <div class="duration-text">Duration: ${p3t.duration || 0}s</div>
+            ${p3BlobUrl ? `<audio controls src="${p3BlobUrl}"></audio>` : ''}
+            ${buildAnalysisHtml(p3t.analysis)}
+          </div>`;
+      });
+    }
   }
 
   showScreen('results');
@@ -840,18 +1002,36 @@ function buildMarkdown() {
     md += `## IELTS Speaking Part 2 & 3 Practice\nDate: ${now}\n\n`;
     md += `### Topic Card\n${state.part2Topic}\n\n`;
     md += `### My Notes\n${state.part2Notes || '(no notes)'}\n\n`;
-    md += `### My Response\n${state.part2Transcript.transcript || '—'}\n`;
+    md += `### Part 2 — My Response\n${state.part2Transcript.transcript || '—'}\n`;
     md += `**Duration:** ${state.part2Transcript.duration || 0}s\n`;
     md += buildAnalysisMarkdown(state.part2Transcript.analysis);
     if (p2Sample) md += `\n### Sample Answer\n${p2Sample}\n`;
-    md += `\n---\n\nPlease analyze my Part 2 response for:\n`;
-    md += `1. Task achievement (did I cover all bullet points?)\n`;
+
+    if (state.part3Transcripts.length > 0) {
+      md += `\n### Part 3 — Discussion\n\n`;
+      state.part3Questions.forEach((q, i) => {
+        const p3t = state.part3Transcripts[i] || {};
+        const p3Label = state.part3Parsed[i]?.id || `${i + 1}`;
+        md += `#### Q${p3Label}\n`;
+        md += `**Q:** ${q}\n`;
+        md += `**My Answer:** ${p3t.transcript || '—'}\n`;
+        md += `**Duration:** ${p3t.duration || 0}s\n`;
+        md += buildAnalysisMarkdown(p3t.analysis);
+        md += '\n';
+      });
+    }
+
+    md += `---\n\nPlease analyze my Part 2 & 3 responses for:\n`;
+    md += `1. Task achievement (did I cover all bullet points in Part 2?)\n`;
     md += `2. Fluency and coherence\n`;
     md += `3. Lexical resource\n`;
     md += `4. Grammatical range and accuracy\n`;
-    if (p2Sample) md += `5. Compare my answer with the sample answer and identify gaps\n`;
-    md += `${p2Sample ? '6' : '5'}. Estimated band score for Part 2\n`;
-    md += `${p2Sample ? '7' : '6'}. Specific suggestions for improvement\n`;
+    if (p2Sample) md += `5. Compare my Part 2 answer with the sample answer and identify gaps\n`;
+    const n = p2Sample ? 6 : 5;
+    if (state.part3Transcripts.length > 0) md += `${n}. Evaluate my Part 3 discussion depth and argumentation\n`;
+    const m = state.part3Transcripts.length > 0 ? n + 1 : n;
+    md += `${m}. Estimated band score for Part 2 & 3\n`;
+    md += `${m + 1}. Specific suggestions for improvement\n`;
   }
 
   return md;
