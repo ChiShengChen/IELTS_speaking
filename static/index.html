@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Speaking Practice</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ============================================================ -->
+    <!-- HOME SCREEN                                                  -->
+    <!-- ============================================================ -->
+    <section id="screen-home" class="screen active">
+      <div class="hero">
+        <h1>IELTS Speaking</h1>
+        <p class="subtitle">Personal Practice System</p>
+      </div>
+      <div class="home-buttons">
+        <button class="btn btn-primary btn-large" data-action="goto-part1-setup">
+          <span class="btn-icon">1</span>
+          Part 1 Practice
+          <span class="btn-desc">5 questions · 45s each</span>
+        </button>
+        <button class="btn btn-primary btn-large" data-action="goto-part2-setup">
+          <span class="btn-icon">2</span>
+          Part 2 &amp; 3 Practice
+          <span class="btn-desc">2 min notes · 2 min speaking</span>
+        </button>
+        <button class="btn btn-secondary" data-action="goto-bank">
+          Question Bank
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PART 1 SETUP                                                 -->
+    <!-- ============================================================ -->
+    <section id="screen-part1-setup" class="screen">
+      <h2>Part 1 — Paste Questions</h2>
+      <textarea id="part1-md-input" rows="12" placeholder="Paste questions in markdown format, e.g.&#10;&#10;# Q1-1:&#10;Do you work or study?&#10;&#10;# A1-1:&#10;I currently work as a software engineer…&#10;&#10;# Q1-2:&#10;What do you enjoy about your job?"></textarea>
+      <div id="part1-drawn-status"></div>
+      <div id="part1-parsed-preview" class="parsed-preview"></div>
+      <div class="setup-actions">
+        <button class="btn btn-secondary" data-action="reshuffle-part1">Reshuffle</button>
+        <button class="btn btn-secondary" data-action="random-part1">Random from Bank</button>
+        <button class="btn btn-primary" data-action="start-part1">Start Practice</button>
+      </div>
+      <button class="btn btn-ghost" data-action="goto-home">← Back</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PART 1 PRACTICE                                              -->
+    <!-- ============================================================ -->
+    <section id="screen-part1-practice" class="screen">
+      <div class="practice-header">
+        <span class="part-label">Part 1</span>
+        <span class="question-counter" id="part1-counter">Q1 / 5</span>
+      </div>
+      <div class="question-display" id="part1-question-text">
+        Question text here
+      </div>
+      <div class="timer-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="52" />
+          <circle class="timer-ring-progress" id="part1-ring" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="timer-text" id="part1-timer-text">45</div>
+      </div>
+      <div class="recording-badge" id="part1-rec-badge">
+        <span class="rec-dot"></span> Recording
+      </div>
+      <button class="btn btn-secondary btn-small" data-action="skip-part1">Next →</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PART 2/3 SETUP                                               -->
+    <!-- ============================================================ -->
+    <section id="screen-part2-setup" class="screen">
+      <h2>Part 2 &amp; 3 — Enter Topic</h2>
+      <textarea id="part2-topic-input" rows="6" placeholder="Paste the topic card here, e.g.&#10;&#10;Describe a book you have recently read.&#10;You should say:&#10;- what the book is&#10;- when you read it&#10;- what it is about&#10;and explain why you liked it."></textarea>
+      <div class="setup-actions">
+        <button class="btn btn-secondary" data-action="random-part2">Random from Bank</button>
+        <button class="btn btn-primary" data-action="start-part2">Start Practice</button>
+      </div>
+      <button class="btn btn-ghost" data-action="goto-home">← Back</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PART 2 — NOTE-TAKING PHASE                                   -->
+    <!-- ============================================================ -->
+    <section id="screen-part2-notes" class="screen">
+      <div class="practice-header">
+        <span class="part-label">Part 2 — Preparation</span>
+        <span class="phase-label">📝 Take Notes</span>
+      </div>
+      <div class="topic-preview" id="part2-topic-display"></div>
+      <div class="timer-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="52" />
+          <circle class="timer-ring-progress" id="part2-notes-ring" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="timer-text" id="part2-notes-timer">2:00</div>
+      </div>
+      <textarea id="part2-notes-area" rows="6" placeholder="Write your notes here…"></textarea>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PART 2 — SPEAKING PHASE                                      -->
+    <!-- ============================================================ -->
+    <section id="screen-part2-speaking" class="screen">
+      <div class="practice-header">
+        <span class="part-label">Part 2 — Speaking</span>
+        <span class="phase-label">🎙️ Your Turn</span>
+      </div>
+      <div class="topic-preview" id="part2-topic-display-2"></div>
+      <div class="timer-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="52" />
+          <circle class="timer-ring-progress" id="part2-speak-ring" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="timer-text" id="part2-speak-timer">2:00</div>
+      </div>
+      <div class="recording-badge active" id="part2-rec-badge">
+        <span class="rec-dot"></span> Recording
+      </div>
+      <div class="notes-reminder" id="part2-notes-reminder"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PROCESSING / LOADING                                         -->
+    <!-- ============================================================ -->
+    <section id="screen-processing" class="screen">
+      <div class="processing-content">
+        <div class="spinner"></div>
+        <h2>Transcribing…</h2>
+        <p id="processing-status">Sending audio to Whisper ASR</p>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- RESULTS                                                      -->
+    <!-- ============================================================ -->
+    <section id="screen-results" class="screen">
+      <h2>Results</h2>
+      <div id="results-content"></div>
+      <div class="results-actions">
+        <button class="btn btn-primary" data-action="copy-results">📋 Copy for Claude Analysis</button>
+        <button class="btn btn-secondary" data-action="goto-home">Back to Home</button>
+      </div>
+      <div class="copy-toast" id="copy-toast">Copied to clipboard!</div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- QUESTION BANK                                                -->
+    <!-- ============================================================ -->
+    <section id="screen-bank" class="screen">
+      <h2>Question Bank</h2>
+      <div class="bank-section">
+        <h3>Part 1 Questions <span class="count" id="bank-part1-count">(0)</span></h3>
+        <textarea id="bank-part1" rows="8" placeholder="One question per line…"></textarea>
+      </div>
+      <div class="bank-section">
+        <h3>Part 2 Topics <span class="count" id="bank-part2-count">(0)</span></h3>
+        <textarea id="bank-part2" rows="8" placeholder="Separate topics with a blank line…"></textarea>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-primary" data-action="save-bank">Save</button>
+        <button class="btn btn-ghost" data-action="goto-home">← Back</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
