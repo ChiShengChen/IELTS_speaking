@@ -1,6 +1,6 @@
-# IELTS Speaking Practice System
+# IELTS Speaking & Writing Practice System
 
-這是一個專為 IELTS 口說練習設計的個人 Web 應用程式，整合了錄音、Whisper 語音轉寫、即時語音分析與 IELTS 分數估算功能。
+這是一個專為 IELTS 口說與寫作練習設計的個人 Web 應用程式，整合了錄音、Whisper 語音轉寫、即時語音分析、IELTS 分數估算，以及寫作計時練習與 Claude 分析匯出功能。
 
 ## 功能
 
@@ -21,6 +21,10 @@
 - **主題詞彙建議**：Part 2 筆記階段顯示該主題 10-15 個 Band 7+ 高分詞彙建議（`topic_vocab.json`），結果頁面標示實際使用了哪些。
 - **PDF 匯出**：一鍵下載練習紀錄 PDF 報告（含題目、逐字稿、分析指標、Band Score），方便分享給老師。
 - **題庫管理**：分開管理 Part 1 與 Part 2 題目，支援隨機抽題。
+- **Writing Task 1 練習**：從 `writing_task1.md` 載入題目與圖片，提供兩階段計時練習（5 分鐘中文發想 + 15 分鐘英文寫作），即時字數統計（目標 150 字），練習完畢可一鍵複製 Markdown 貼進 Claude 取得詳細評分。
+- **Writing Task 2 練習**：從 `writing_task2.md` 載入題目，提供兩階段計時練習（10 分鐘中文發想 + 30 分鐘英文寫作），即時字數統計（目標 250 字），支援範例答案對照與 Claude 分析匯出。
+- **寫作中文發想階段**：參考 IELTS 寫作架構（P1 背景/立場、P2 主論點、P3 反駁、P4 總結），以中文快速規劃作文邏輯，筆記在英文寫作階段持續顯示。
+- **寫作已抽題追蹤**：Task 1 與 Task 2 分別記錄已練習過的題目（`drawn_writing_task1.json` / `drawn_writing_task2.json`），避免重複抽取。
 
 ## 題庫內容
 
@@ -33,6 +37,9 @@
 | `speaking_p3_with_answers.md` | Part 3 討論題 + Band 7 範例答案 | 153 組 Q/A |
 | `topic_vocab.json` | 主題詞彙建議（Band 7+ 高分詞彙） | 51 個主題 × 10-15 詞 |
 | `speaking_p2p3_data/` | Part 2 原始題目與套題策略檔 | 來源資料 |
+| `writing_task1.md` | Writing Task 1 題目 + 範例答案（含圖片引用） | 自行填入 |
+| `writing_task2.md` | Writing Task 2 題目 + 範例答案 | 自行填入 |
+| `writing_task1_images/` | Task 1 圖片資料夾（對應 md 中的 `![](writing_task1_images/xxx.png)`） | 自行放入 |
 
 ## 安裝
 
@@ -120,6 +127,44 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 5. 結束後顯示 **Mock Test Results**，包含所有 Part 的逐字稿、分析與分數。
 6. 匯出 Markdown 時會標示為完整模擬測驗格式。
 
+### Writing Task 1 練習流程
+
+1. 點選 **Writing Task 1**。
+2. 系統自動從 `writing_task1.md` 載入題目，隨機抽取 1 題尚未練習過的題目，顯示題目文字與對應圖片。
+3. 若不滿意當前抽題，可點選 **Reshuffle** 重新抽取。
+4. 點選 **Start Writing** 開始：
+   - **Phase 1 — 中文發想（5 分鐘）**：以中文規劃作文結構，可按 **Skip to Writing →** 提前進入下一階段。
+   - **Phase 2 — 英文寫作（15 分鐘）**：上方顯示發想筆記供參考，即時字數統計（目標 150 字），達標顯示綠色。
+5. 時間到或按 **Finish** 結束，進入結果頁面。
+
+### Writing Task 2 練習流程
+
+1. 點選 **Writing Task 2**。
+2. 系統自動從 `writing_task2.md` 載入題目，隨機抽取 1 題尚未練習過的題目。
+3. 點選 **Start Writing** 開始：
+   - **Phase 1 — 中文發想（10 分鐘）**：以中文規劃作文邏輯（P1 背景/立場、P2 主論點、P3 反駁、P4 總結）。
+   - **Phase 2 — 英文寫作（30 分鐘）**：上方顯示發想筆記，即時字數統計（目標 250 字）。
+4. 結果頁面顯示題目、發想筆記、你的作文、範例答案。
+5. 點選 **Copy for Claude Analysis** 複製完整 Markdown，包含 Writing 評分標準提示。
+
+#### Writing 題目格式
+
+```markdown
+# Q1:
+題目文字
+![](writing_task1_images/q1.png)    ← Task 1 需要圖片引用
+
+# A1:
+範例答案文字（或中文發想大綱，參考 A8 格式）
+
+# Q2:
+...
+```
+
+- `# Qn:` 為題目，`# An:` 為範例答案。
+- Task 1 題目中可用 `![](writing_task1_images/xxx.png)` 引用圖片，圖片放在 `writing_task1_images/` 資料夾。
+- Task 2 範例答案可以是完整英文範文，也可以是中文發想大綱（如 A8 的 P1/P2/P3/P4 格式）。
+
 ### 結果頁面
 
 - 顯示各 Part 回答，每段皆含逐字稿（含高亮標記）、錄音回放、語音分析指標與 IELTS 分數估算。
@@ -203,9 +248,14 @@ IELTS_record_ASR/
 ├── speaking_p2p3_data/             # Part 2 原始題目與套題策略
 │   ├── speaking_p2_q.md
 │   └── speaking_p2_core.md
+├── writing_task1.md                # Writing Task 1 題目 + 範例答案
+├── writing_task2.md                # Writing Task 2 題目 + 範例答案
+├── writing_task1_images/           # Task 1 圖片資料夾
 ├── questions.json                  # 題庫資料
 ├── drawn_p1.json                   # Part 1 已抽題紀錄
 ├── drawn_p2.json                   # Part 2 已抽題紀錄
+├── drawn_writing_task1.json        # Writing Task 1 已抽題紀錄
+├── drawn_writing_task2.json        # Writing Task 2 已抽題紀錄
 ├── recordings/                     # 錄音檔（按 session 分資料夾）
 ├── sessions/                       # 練習記錄 JSON（含轉寫、分析、分數）
 └── static/
