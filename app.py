@@ -23,10 +23,14 @@ _PART_FILES = {
     "part1": BASE_DIR / "speaking_p1.md",
     "part2": BASE_DIR / "speaking_p2_with_answers.md",
     "part3": BASE_DIR / "speaking_p3_with_answers.md",
+    "writing_task1": BASE_DIR / "writing_task1.md",
+    "writing_task2": BASE_DIR / "writing_task2.md",
 }
 _DRAWN_FILES = {
     "p1": DRAWN_P1_FILE,
     "p2": DRAWN_P2_FILE,
+    "wt1": BASE_DIR / "drawn_writing_task1.json",
+    "wt2": BASE_DIR / "drawn_writing_task2.json",
 }
 
 VOCAB_FILE = BASE_DIR / "topic_vocab.json"
@@ -765,6 +769,18 @@ async def export_session_pdf(session_id: str):
         media_type="application/pdf",
         filename=f"ielts_session_{session_id}.pdf",
     )
+
+
+# ---------------------------------------------------------------------------
+# API – Writing Task 1 images
+# ---------------------------------------------------------------------------
+@app.get("/writing_task1_images/{filename}")
+async def serve_writing_image(filename: str):
+    img_dir = BASE_DIR / "writing_task1_images"
+    filepath = img_dir / filename
+    if not filepath.exists() or not filepath.is_file():
+        raise HTTPException(404, "Image not found")
+    return FileResponse(str(filepath))
 
 
 # ---------------------------------------------------------------------------

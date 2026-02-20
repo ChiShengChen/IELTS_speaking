@@ -34,6 +34,16 @@
           Mock Test
           <span class="btn-desc">Part 1 &rarr; 2 &rarr; 3 · Full simulation</span>
         </button>
+        <button class="btn btn-primary btn-large" data-action="goto-writing-task1-setup">
+          <span class="btn-icon">W1</span>
+          Writing Task 1
+          <span class="btn-desc">20 min · Chart / Graph / Map description</span>
+        </button>
+        <button class="btn btn-primary btn-large" data-action="goto-writing-task2-setup">
+          <span class="btn-icon">W2</span>
+          Writing Task 2
+          <span class="btn-desc">40 min · Essay</span>
+        </button>
         <button class="btn btn-secondary" data-action="goto-history">
           Practice History
         </button>
@@ -167,6 +177,69 @@
         <span class="rec-dot"></span> <span class="rec-label">Recording</span>
       </div>
       <button class="btn btn-secondary btn-small" data-action="skip-part3">Next →</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- WRITING — SETUP                                              -->
+    <!-- ============================================================ -->
+    <section id="screen-writing-setup" class="screen">
+      <h2 id="writing-setup-title">Writing Task 1</h2>
+      <div id="writing-question-preview" class="writing-question-preview"></div>
+      <div id="writing-image-preview" class="writing-image-preview"></div>
+      <div id="writing-drawn-status"></div>
+      <div class="setup-actions">
+        <button class="btn btn-secondary" data-action="reshuffle-writing">Reshuffle</button>
+        <button class="btn btn-primary" data-action="start-writing">Start Writing</button>
+      </div>
+      <button class="btn btn-ghost" data-action="goto-home">&larr; Back</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- WRITING — BRAINSTORM PHASE (Chinese outline)                 -->
+    <!-- ============================================================ -->
+    <section id="screen-writing-brainstorm" class="screen">
+      <div class="practice-header">
+        <span class="part-label" id="writing-brainstorm-label">Writing Task 2 — Brainstorm</span>
+        <span class="phase-label" id="writing-brainstorm-phase">&#x1F4DD; &#x4E2D;&#x6587;&#x767C;&#x60F3;</span>
+      </div>
+      <div class="writing-question-display" id="writing-brainstorm-question"></div>
+      <div class="writing-image-display" id="writing-brainstorm-image"></div>
+      <div class="timer-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="52" />
+          <circle class="timer-ring-progress" id="writing-brainstorm-ring" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="timer-text" id="writing-brainstorm-timer">10:00</div>
+      </div>
+      <textarea id="writing-brainstorm-input" class="writing-brainstorm-area" rows="12" placeholder="&#x4EE5;&#x4E2D;&#x6587;&#x898F;&#x5283;&#x4F5C;&#x6587;&#x7D50;&#x69CB;&#xFF0C;&#x4F8B;&#x5982;&#xFF1A;&#10;&#10;P1: &#x80CC;&#x666F; / &#x722D;&#x8B70; / &#x7ACB;&#x5834; / &#x7406;&#x7531;&#10;P2: &#x4E3B;&#x8AD6;&#x9EDE; / Why / &#x679C; / &#x6B21;&#x8AD6;&#x9EDE;&#10;P3: &#x627F;&#x8A8D; / &#x53CD;&#x99C1; / &#x89E3;&#x6CD5; / &#x56DE;&#x6263;&#10;P4: &#x7E3D;&#x7D50; / &#x56DE;&#x6263;"></textarea>
+      <div class="writing-bottom-bar">
+        <button class="btn btn-primary btn-small" data-action="skip-brainstorm">Skip to Writing &rarr;</button>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- WRITING — ESSAY PHASE (English writing)                      -->
+    <!-- ============================================================ -->
+    <section id="screen-writing-practice" class="screen">
+      <div class="practice-header">
+        <span class="part-label" id="writing-practice-label">Writing Task 2 — Essay</span>
+        <span class="question-counter" id="writing-word-count">0 words</span>
+      </div>
+      <div class="writing-question-display" id="writing-practice-question"></div>
+      <div class="writing-image-display" id="writing-practice-image"></div>
+      <div class="timer-container">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle class="timer-ring-bg" cx="60" cy="60" r="52" />
+          <circle class="timer-ring-progress" id="writing-timer-ring" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="timer-text" id="writing-timer-text">30:00</div>
+      </div>
+      <div class="notes-reminder" id="writing-brainstorm-reminder"></div>
+      <textarea id="writing-essay-input" class="writing-essay-area" rows="16" placeholder="Start writing your essay in English..."></textarea>
+      <div class="writing-bottom-bar">
+        <span class="writing-word-count-bar" id="writing-word-count-bar">0 words</span>
+        <button class="btn btn-primary btn-small" data-action="finish-writing">Finish</button>
+      </div>
     </section>
 
     <!-- ============================================================ -->

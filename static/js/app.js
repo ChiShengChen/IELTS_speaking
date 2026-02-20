@@ -34,6 +34,17 @@ const state = {
   part3Recordings: [],
   part3Transcripts: [],
   part3Timer: null,
+
+  writingTask: null,
+  writingQuestion: '',
+  writingQuestionId: null,
+  writingSampleAnswer: '',
+  writingImagePath: '',
+  writingBrainstorm: '',
+  writingBrainstormTimer: null,
+  writingEssay: '',
+  writingTimer: null,
+  writingStartTime: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -134,6 +145,13 @@ document.addEventListener('click', (e) => {
     'back-to-history':    loadHistory,
     'download-session-pdf': () => { window.open(`/api/sessions/${btn.dataset.sessionId}/pdf`); },
     'copy-history-detail': copyHistoryDetail,
+    'goto-writing-task1-setup': () => gotoWritingSetup('task1'),
+    'goto-writing-task2-setup': () => gotoWritingSetup('task2'),
+    'reshuffle-writing':  loadWritingFile,
+    'start-writing':      startWriting,
+    'skip-brainstorm':    transitionToEssay,
+    'finish-writing':     finishWriting,
+    'reset-drawn-writing': resetWritingDrawnHistory,
   };
 
   if (handlers[action]) handlers[action]();
@@ -1593,7 +1611,7 @@ async function downloadPdf() {
 }
 
 async function copyResults() {
-  const md = buildMarkdown();
+  const md = state.writingTask ? buildWritingMarkdown() : buildMarkdown();
   try {
     await navigator.clipboard.writeText(md);
     const toast = $('#copy-toast');
@@ -1792,7 +1810,11 @@ function renderHistoryCard(s) {
       })
     : 'Unknown date';
 
-  const typeLabel = s.type === 'part1' ? 'Part 1' : s.type === 'part2' ? 'Part 2 & 3' : s.type === 'mock' ? 'Mock Test' : s.type || '—';
+  const _typeLabels = {
+    part1: 'Part 1', part2: 'Part 2 & 3', mock: 'Mock Test',
+    writing_task1: 'Writing Task 1', writing_task2: 'Writing Task 2',
+  };
+  const typeLabel = _typeLabels[s.type] || s.type || '—';
 
   let bandHtml = '';
   const bandData = _getSessionOverallBand(s);
@@ -1813,6 +1835,9 @@ function renderHistoryCard(s) {
   } else if (s.type === 'part2' && s.topic) {
     const topicSnip = s.topic.length > 80 ? s.topic.slice(0, 80) + '…' : s.topic;
     detailHtml = `<div class="history-detail">${escapeHtml(topicSnip)}</div>`;
+  } else if ((s.type === 'writing_task1' || s.type === 'writing_task2') && s.question) {
+    const qSnip = s.question.length > 80 ? s.question.slice(0, 80) + '…' : s.question;
+    detailHtml = `<div class="history-detail">${s.word_count || 0} words · ${escapeHtml(qSnip)}</div>`;
   }
 
   return `
@@ -1865,9 +1890,11 @@ async function viewSessionDetail(sessionId) {
     if (!res.ok) throw new Error('Not found');
     const s = await res.json();
 
-    const typeLabel = s.type === 'part1' ? 'Part 1 Practice'
-      : s.type === 'part2' ? 'Part 2 & 3 Practice'
-      : s.type === 'mock' ? 'Mock Test' : s.type || 'Session';
+    const _detailTypeLabels = {
+      part1: 'Part 1 Practice', part2: 'Part 2 & 3 Practice', mock: 'Mock Test',
+      writing_task1: 'Writing Task 1', writing_task2: 'Writing Task 2',
+    };
+    const typeLabel = _detailTypeLabels[s.type] || s.type || 'Session';
     const date = s.created_at
       ? new Date(s.created_at).toLocaleString('en-US', {
           month: 'short', day: 'numeric', year: 'numeric',
@@ -2032,10 +2059,41 @@ async function viewSessionDetail(sessionId) {
       });
     }
 
+    if (s.type === 'writing_task1' || s.type === 'writing_task2') {
+      html += `<div class="result-card">
+        <h4>Question</h4>
+        <div class="question-text">${escapeHtml(s.question || '')}</div>
+        ${s.image_path ? `<div class="writing-image-display"><img src="/${s.image_path}" alt="Task image" /></div>` : ''}
+      </div>`;
+
+      if (s.brainstorm) {
+        html += `<div class="result-card">
+          <h4>Brainstorm Notes</h4>
+          <div class="writing-essay-display">${escapeHtml(s.brainstorm)}</div>
+        </div>`;
+      }
+
+      html += `<div class="result-card">
+        <h4>Your Essay</h4>
+        <div class="writing-stats">
+          <span class="writing-stat">${s.word_count || 0} words</span>
+          <span class="writing-stat">${_formatTime(s.time_spent || 0)} time spent</span>
+        </div>
+        <div class="writing-essay-display">${escapeHtml(s.essay || '(No essay)')}</div>
+      </div>`;
+
+      if (s.sample_answer) {
+        html += `<div class="result-card">
+          <h4>Sample Answer</h4>
+          <div class="sample-text">${escapeHtml(s.sample_answer)}</div>
+        </div>`;
+      }
+    }
+
     _historyDetailSession = s;
     html += `<div class="detail-actions">
       <button class="btn btn-primary" data-action="copy-history-detail">📋 Copy for Claude Analysis</button>
-      <button class="btn btn-secondary" data-action="download-session-pdf" data-session-id="${sessionId}">📄 Download PDF</button>
+      ${(s.type !== 'writing_task1' && s.type !== 'writing_task2') ? `<button class="btn btn-secondary" data-action="download-session-pdf" data-session-id="${sessionId}">📄 Download PDF</button>` : ''}
       <button class="btn btn-ghost" data-action="back-to-history">&larr; Back to list</button>
     </div>
     <div class="copy-toast" id="history-copy-toast">Copied to clipboard!</div>`;
@@ -2049,8 +2107,44 @@ async function viewSessionDetail(sessionId) {
 
 let _historyDetailSession = null;
 
+function _buildWritingHistoryMarkdown(s) {
+  const now = s.created_at ? new Date(s.created_at).toLocaleString() : 'Unknown';
+  const label = s.type === 'writing_task1' ? 'Task 1' : 'Task 2';
+
+  let md = `## IELTS Writing ${label} Practice\nDate: ${now}\n\n`;
+  md += `### Question\n${s.question || ''}\n`;
+  if (s.image_path) md += `*(An image/chart was shown during practice)*\n`;
+  if (s.brainstorm) md += `\n### Brainstorm Notes (Chinese outline)\n${s.brainstorm}\n`;
+  md += `\n### My Essay (${s.word_count || 0} words, ${_formatTime(s.time_spent || 0)} time spent)\n${s.essay || '(No essay written)'}\n`;
+  if (s.sample_answer) md += `\n### Sample Answer\n${s.sample_answer}\n`;
+
+  md += `\n---\n\nPlease analyze my IELTS Writing ${label} essay for:\n`;
+  md += `1. Task Achievement${s.type === 'writing_task2' ? ' / Task Response' : ''}\n`;
+  md += `2. Coherence and Cohesion\n`;
+  md += `3. Lexical Resource\n`;
+  md += `4. Grammatical Range and Accuracy\n`;
+  md += `5. Compare my answer with the sample answer and identify gaps\n`;
+  md += `6. Estimated band score\n`;
+  md += `7. Specific suggestions for improvement\n`;
+  md += `\n**以 IELTS Band 7 為標準，請針對我的作文：**\n`;
+  md += `- 逐段標出文法錯誤、用詞不當、搭配不自然之處，並提供修正\n`;
+  if (s.type === 'writing_task1') {
+    md += `- 檢查是否完整描述了圖表的主要趨勢、比較和關鍵數據\n`;
+  } else {
+    md += `- 檢查論點是否有深度，是否有正反論述，結構是否清晰\n`;
+  }
+  md += `- 指出過於簡單或重複的表達，建議替換為 Band 7 水準的詞彙/片語\n`;
+  md += `- 提供一段修正後的完整作文範例（Band 7 版本）\n`;
+  return md;
+}
+
 function buildHistoryMarkdown(s) {
   if (!s) return '';
+
+  if (s.type === 'writing_task1' || s.type === 'writing_task2') {
+    return _buildWritingHistoryMarkdown(s);
+  }
+
   const now = s.created_at ? new Date(s.created_at).toLocaleString() : 'Unknown';
   let md = '';
 
@@ -2189,6 +2283,384 @@ async function saveBank() {
   } catch {
     alert('Failed to save question bank.');
   }
+}
+
+// ---------------------------------------------------------------------------
+// Writing — Markdown parser (# Q1: / # A1: format, with optional images)
+// ---------------------------------------------------------------------------
+function parseWritingMarkdown(text) {
+  const results = [];
+  const headerRe = /^#\s*([QA])(\d+)\s*:?\s*$/;
+  const lines = text.split('\n');
+  let current = null;
+  let contentLines = [];
+
+  function flush() {
+    if (!current) return;
+    const body = contentLines.join('\n').trim();
+    if (current.type === 'Q') {
+      results.push({ id: current.id, question: body, answer: '', image: '' });
+    } else if (current.type === 'A') {
+      const match = results.findLast((r) => r.id === current.id);
+      if (match) match.answer = body;
+    }
+  }
+
+  for (const line of lines) {
+    const m = line.match(headerRe);
+    if (m) {
+      flush();
+      current = { type: m[1], id: m[2] };
+      contentLines = [];
+    } else {
+      contentLines.push(line);
+    }
+  }
+  flush();
+
+  for (const r of results) {
+    const imgMatch = r.question.match(/!\[.*?\]\((.*?)\)/);
+    if (imgMatch) {
+      r.image = imgMatch[1];
+      r.question = r.question.replace(/!\[.*?\]\(.*?\)\s*/g, '').trim();
+    }
+  }
+
+  return results.filter((r) => r.question);
+}
+
+// ---------------------------------------------------------------------------
+// Writing — Setup
+// ---------------------------------------------------------------------------
+let _writingAllParsed = [];
+let _writingFileAnswers = {};
+
+function gotoWritingSetup(task) {
+  state.writingTask = task;
+  const label = task === 'task1' ? 'Writing Task 1' : 'Writing Task 2';
+  $('#writing-setup-title').textContent = label;
+  $('#writing-question-preview').innerHTML = '';
+  $('#writing-image-preview').innerHTML = '';
+  $('#writing-drawn-status').innerHTML = '';
+  showScreen('writing-setup');
+  loadWritingFile();
+}
+
+async function loadWritingFile() {
+  const part = state.writingTask === 'task1' ? 'writing_task1' : 'writing_task2';
+  const drawnPart = state.writingTask === 'task1' ? 'wt1' : 'wt2';
+
+  try {
+    const res = await fetch(`/api/load-file?part=${part}`);
+    if (!res.ok) {
+      $('#writing-question-preview').innerHTML = `<span style="color:var(--text-muted)">No ${part.replace('_', ' ')}.md file found. Create it and add your questions.</span>`;
+      return;
+    }
+    const { content } = await res.json();
+    const parsed = parseWritingMarkdown(content);
+
+    _writingAllParsed = parsed;
+    _writingFileAnswers = {};
+    parsed.forEach((p) => { if (p.answer) _writingFileAnswers[p.id] = p.answer; });
+
+    let drawnIds = [];
+    try {
+      const dRes = await fetch(`/api/drawn-history?part=${drawnPart}`);
+      if (dRes.ok) {
+        const dData = await dRes.json();
+        drawnIds = dData.drawn_ids || [];
+      }
+    } catch { /* ignore */ }
+
+    const drawnSet = new Set(drawnIds);
+    let undrawn = parsed.filter((p) => !drawnSet.has(p.id));
+    if (undrawn.length === 0 && parsed.length > 0) undrawn = parsed;
+
+    const drawnCount = drawnIds.length;
+    const totalCount = parsed.length;
+    _renderWritingDrawnStatus(drawnCount, totalCount);
+
+    const selected = _shuffle(undrawn)[0];
+    if (!selected) return;
+
+    state.writingQuestionId = selected.id;
+    state.writingQuestion = selected.question;
+    state.writingSampleAnswer = selected.answer || _writingFileAnswers[selected.id] || '';
+    state.writingImagePath = selected.image || '';
+
+    $('#writing-question-preview').textContent = selected.question;
+
+    if (selected.image) {
+      $('#writing-image-preview').innerHTML = `<img src="/${selected.image}" alt="Task 1 image" />`;
+    } else {
+      $('#writing-image-preview').innerHTML = '';
+    }
+  } catch {
+    $('#writing-question-preview').innerHTML = '<span style="color:var(--danger)">Failed to load questions.</span>';
+  }
+}
+
+function _renderWritingDrawnStatus(drawnCount, totalCount) {
+  const el = $('#writing-drawn-status');
+  if (!el) return;
+  const remaining = totalCount - drawnCount;
+  const allDone = remaining <= 0;
+  el.innerHTML =
+    `<div class="drawn-status-bar">` +
+      `<span class="drawn-counts">Drawn <strong>${drawnCount}</strong> / Remaining <strong>${remaining}</strong> / Total <strong>${totalCount}</strong> questions</span>` +
+      (allDone ? `<span class="drawn-all-badge">All practiced!</span>` : '') +
+      `<button class="btn btn-ghost btn-small" data-action="reset-drawn-writing">Reset Draw</button>` +
+    `</div>`;
+}
+
+async function resetWritingDrawnHistory() {
+  const drawnPart = state.writingTask === 'task1' ? 'wt1' : 'wt2';
+  try {
+    await fetch(`/api/drawn-history?part=${drawnPart}`, { method: 'DELETE' });
+    $('#writing-drawn-status').innerHTML = '';
+    await loadWritingFile();
+  } catch { /* ignore */ }
+}
+
+// ---------------------------------------------------------------------------
+// Writing — Practice flow
+// ---------------------------------------------------------------------------
+function _countWords(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function _updateWritingWordCount() {
+  const text = $('#writing-essay-input').value;
+  const count = _countWords(text);
+  const minWords = state.writingTask === 'task1' ? 150 : 250;
+  const label = `${count} / ${minWords} words`;
+  const cls = count >= minWords ? 'good' : count >= minWords * 0.6 ? '' : 'weak';
+
+  const hdr = $('#writing-word-count');
+  const bar = $('#writing-word-count-bar');
+  hdr.textContent = label;
+  bar.textContent = label;
+  hdr.className = `question-counter writing-wc ${cls}`;
+  bar.className = `writing-word-count-bar ${cls}`;
+}
+
+async function startWriting() {
+  if (!state.writingQuestion) {
+    alert('No question loaded.');
+    return;
+  }
+
+  state.sessionId = generateSessionId();
+  state.writingBrainstorm = '';
+  state.writingEssay = '';
+  state.writingStartTime = Date.now();
+
+  const isTask1 = state.writingTask === 'task1';
+  const label = isTask1 ? 'Writing Task 1' : 'Writing Task 2';
+  const brainstormDuration = isTask1 ? 300 : 600;
+
+  $('#writing-brainstorm-label').textContent = `${label} — Brainstorm`;
+  $('#writing-brainstorm-question').textContent = state.writingQuestion;
+
+  if (state.writingImagePath) {
+    $('#writing-brainstorm-image').innerHTML = `<img src="/${state.writingImagePath}" alt="Task image" />`;
+  } else {
+    $('#writing-brainstorm-image').innerHTML = '';
+  }
+
+  $('#writing-brainstorm-input').value = '';
+
+  showScreen('writing-brainstorm');
+
+  state.writingBrainstormTimer = new Timer(
+    brainstormDuration,
+    $('#writing-brainstorm-ring'),
+    $('#writing-brainstorm-timer'),
+    {
+      onWarning: () => playBeep(600, 100),
+      onComplete: () => transitionToEssay(),
+    },
+  );
+  state.writingBrainstormTimer.start();
+}
+
+function transitionToEssay() {
+  if (state.writingBrainstormTimer) state.writingBrainstormTimer.stop();
+  state.writingBrainstorm = $('#writing-brainstorm-input').value.trim();
+
+  const isTask1 = state.writingTask === 'task1';
+  const label = isTask1 ? 'Writing Task 1' : 'Writing Task 2';
+  const essayDuration = isTask1 ? 900 : 1800;
+
+  $('#writing-practice-label').textContent = `${label} — Essay`;
+  $('#writing-practice-question').textContent = state.writingQuestion;
+
+  if (state.writingImagePath) {
+    $('#writing-practice-image').innerHTML = `<img src="/${state.writingImagePath}" alt="Task image" />`;
+  } else {
+    $('#writing-practice-image').innerHTML = '';
+  }
+
+  const reminder = $('#writing-brainstorm-reminder');
+  if (reminder) {
+    reminder.textContent = state.writingBrainstorm || '(no brainstorm notes)';
+  }
+
+  $('#writing-essay-input').value = '';
+  _updateWritingWordCount();
+
+  showScreen('writing-practice');
+
+  state.writingTimer = new Timer(
+    essayDuration,
+    $('#writing-timer-ring'),
+    $('#writing-timer-text'),
+    {
+      onWarning: () => playBeep(600, 100),
+      onComplete: () => finishWriting(),
+    },
+  );
+  state.writingTimer.start();
+}
+
+async function finishWriting() {
+  if (state.writingTimer) state.writingTimer.stop();
+
+  state.writingEssay = $('#writing-essay-input').value.trim();
+  const wordCount = _countWords(state.writingEssay);
+  const elapsed = Math.round((Date.now() - state.writingStartTime) / 1000);
+
+  const drawnPart = state.writingTask === 'task1' ? 'wt1' : 'wt2';
+  if (state.writingQuestionId) {
+    try {
+      await fetch(`/api/drawn-history?part=${drawnPart}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [state.writingQuestionId] }),
+      });
+    } catch { /* ignore */ }
+  }
+
+  await fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      session_id: state.sessionId,
+      type: state.writingTask === 'task1' ? 'writing_task1' : 'writing_task2',
+      created_at: new Date().toISOString(),
+      question: state.writingQuestion,
+      question_id: state.writingQuestionId,
+      image_path: state.writingImagePath,
+      brainstorm: state.writingBrainstorm,
+      essay: state.writingEssay,
+      word_count: wordCount,
+      time_spent: elapsed,
+      sample_answer: state.writingSampleAnswer,
+    }),
+  }).catch(() => {});
+
+  renderWritingResults(wordCount, elapsed);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const essayInput = $('#writing-essay-input');
+  if (essayInput) {
+    essayInput.addEventListener('input', _updateWritingWordCount);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Writing — Results
+// ---------------------------------------------------------------------------
+function _formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function renderWritingResults(wordCount, elapsed) {
+  const container = $('#results-content');
+  const title = $('#results-title');
+  const label = state.writingTask === 'task1' ? 'Writing Task 1' : 'Writing Task 2';
+  if (title) title.textContent = `${label} Results`;
+
+  let html = '';
+
+  html += `<div class="result-card">
+    <h4>Question</h4>
+    <div class="question-text">${escapeHtml(state.writingQuestion)}</div>
+    ${state.writingImagePath ? `<div class="writing-image-display"><img src="/${state.writingImagePath}" alt="Task image" /></div>` : ''}
+  </div>`;
+
+  if (state.writingBrainstorm) {
+    html += `<div class="result-card">
+      <h4>Brainstorm Notes</h4>
+      <div class="writing-essay-display">${escapeHtml(state.writingBrainstorm)}</div>
+    </div>`;
+  }
+
+  html += `<div class="result-card">
+    <h4>Your Essay</h4>
+    <div class="writing-stats">
+      <span class="writing-stat">${wordCount} words</span>
+      <span class="writing-stat">${_formatTime(elapsed)} time spent</span>
+      ${state.writingTask === 'task1'
+        ? `<span class="writing-stat ${wordCount >= 150 ? 'good' : 'weak'}">${wordCount >= 150 ? '✓' : '✗'} min 150 words</span>`
+        : `<span class="writing-stat ${wordCount >= 250 ? 'good' : 'weak'}">${wordCount >= 250 ? '✓' : '✗'} min 250 words</span>`}
+    </div>
+    <div class="writing-essay-display">${escapeHtml(state.writingEssay || '(No essay written)')}</div>
+  </div>`;
+
+  if (state.writingSampleAnswer) {
+    html += `<div class="result-card">
+      <h4>Sample Answer</h4>
+      <div class="sample-text">${escapeHtml(state.writingSampleAnswer)}</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+  showScreen('results');
+}
+
+function buildWritingMarkdown() {
+  const label = state.writingTask === 'task1' ? 'Task 1' : 'Task 2';
+  const now = new Date().toLocaleString();
+  const wordCount = _countWords(state.writingEssay);
+  const elapsed = Math.round((Date.now() - state.writingStartTime) / 1000);
+
+  let md = `## IELTS Writing ${label} Practice\nDate: ${now}\n\n`;
+  md += `### Question\n${state.writingQuestion}\n`;
+  if (state.writingImagePath) md += `*(An image/chart was shown during practice)*\n`;
+
+  if (state.writingBrainstorm) {
+    md += `\n### Brainstorm Notes (Chinese outline)\n${state.writingBrainstorm}\n`;
+  }
+
+  md += `\n### My Essay (${wordCount} words, ${_formatTime(elapsed)} time spent)\n${state.writingEssay || '(No essay written)'}\n`;
+
+  if (state.writingSampleAnswer) {
+    md += `\n### Sample Answer\n${state.writingSampleAnswer}\n`;
+  }
+
+  md += `\n---\n\nPlease analyze my IELTS Writing ${label} essay for:\n`;
+  md += `1. Task Achievement${state.writingTask === 'task2' ? ' / Task Response' : ''}\n`;
+  md += `2. Coherence and Cohesion\n`;
+  md += `3. Lexical Resource\n`;
+  md += `4. Grammatical Range and Accuracy\n`;
+  md += `5. Compare my answer with the sample answer and identify gaps\n`;
+  md += `6. Estimated band score\n`;
+  md += `7. Specific suggestions for improvement\n`;
+  md += `\n**以 IELTS Band 7 為標準，請針對我的作文：**\n`;
+  md += `- 逐段標出文法錯誤、用詞不當、搭配不自然之處，並提供修正\n`;
+  if (state.writingTask === 'task1') {
+    md += `- 檢查是否完整描述了圖表的主要趨勢、比較和關鍵數據\n`;
+  } else {
+    md += `- 檢查論點是否有深度，是否有正反論述，結構是否清晰\n`;
+  }
+  md += `- 指出過於簡單或重複的表達，建議替換為 Band 7 水準的詞彙/片語\n`;
+  md += `- 提供一段修正後的完整作文範例（Band 7 版本）\n`;
+
+  return md;
 }
 
 // ---------------------------------------------------------------------------
