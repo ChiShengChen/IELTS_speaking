@@ -2468,7 +2468,15 @@ async function startWriting() {
     $('#writing-brainstorm-image').innerHTML = '';
   }
 
-  $('#writing-brainstorm-input').value = '';
+  const brainstormInput = $('#writing-brainstorm-input');
+  brainstormInput.value = '';
+  if (isTask1) {
+    brainstormInput.placeholder = 'Jot down your notes here...';
+    $('#writing-brainstorm-phase').textContent = '\u{1F4DD} Notes';
+  } else {
+    brainstormInput.placeholder = '以中文規劃作文結構，例如：\n\nP1: 背景 / 爭議 / 立場 / 理由\nP2: 主論點 / Why / 果 / 次論點\nP3: 承認 / 反駁 / 解法 / 回扣\nP4: 總結 / 回扣';
+    $('#writing-brainstorm-phase').textContent = '\u{1F4DD} 中文發想';
+  }
 
   showScreen('writing-brainstorm');
 

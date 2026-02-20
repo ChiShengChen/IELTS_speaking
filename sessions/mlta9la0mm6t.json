@@ -1,0 +1,373 @@
+{
+  "session_id": "mlta9la0mm6t",
+  "type": "part1",
+  "created_at": "2026-02-19T09:57:29.554Z",
+  "questions": [
+    "Are there many wild animals in your country?",
+    "Is it easy to remember your teachers in elementary school?",
+    "Which do you prefer: shopping at street market or shopping at a shopping centre?",
+    "How easy is it for people in your country to keep healthy?",
+    "Did you learn to draw or paint when you were younger?"
+  ],
+  "sample_answers": [
+    "There is an abundance of wildlife in China! We have animals like the giant panda which are iconic of China.\nBut there are also many other wild animals such as elephants, tigers, leopards and monkeys",
+    "Oh, I could never forget the teachers I had in elementary school. Elementary school is such a formative stage\nof a person’s life and the teachers you had you would see every day. My teachers were probably some of the\nmost influential people in my childhood.",
+    "Personally, I prefer shopping at a shopping centre rather than at a street market. I find that shopping\ncentres are more convenient and easier to use. You can find everything you need at a shopping centre\nwhile street markets normally have a very limited selection of products.",
+    "I would not say it is easy for people in my country to keep healthy, it takes a lot of discipline. There are so many\nfatty foods and treats that are full of sugar. Also, most people work sat at a computer all day. So, it takes a lot\nof effort and willpower to stay fit.",
+    "Yes, when I was a child, I learned how to draw and paint. I grew up in a very creative household and\nmy mother encouraged my siblings and I to draw from a very young age. So, I am quite skilled in both\ndrawing and painting."
+  ],
+  "transcripts": [
+    "Well, animals? Yes, there are a lot of well animals in my country. In Taiwan, like  black bears, like wild deer, and a lot of pigeons and monkeys in the mountain. And there are  also a lot of fishes in oceans like sharks, whales, and some white fish and so on.",
+    "Do you remember in elementary school?  I will say yes.  I remember most of my teacher's elementary school  because elementary school is a very important state in human life.  So when I was a child, the elementary school was the first group of  at that time, I'm with every day, so I will remember in a long time.",
+    "shopping street market or shopping center. I would prefer shopping and shopping center  is because shopping center has more choices than a street market has  when I need to buy a lot of stuff, clothing, so various categories  the shopping center will be the best choice than the street market.",
+    "Is it easy for people in your country to keep healthy?  I was saying yes.  A lot of people in my country  tend to eat very healthy  like they are vegans  and there are a lot of people  who have a habit  to exercise in a gym daily  so I would say it's easy  for my people to keep healthy.",
+    "my country. Did you learn to draw pen or younger? Yeah, my mom has encouraged me to draw  with like water pen and oil pen when I was young. So I have learned to pen  crossing a lot of materials like water pen and so on. So I have learned to draw and when I was  as a child."
+  ],
+  "durations": [
+    44.9,
+    45,
+    45,
+    45,
+    45
+  ],
+  "analyses": [
+    {
+      "word_count": 51,
+      "wpm": 68,
+      "filler_count": 3,
+      "unique_words": 32,
+      "vocabulary_diversity": 0.63,
+      "avg_word_length": 3.9,
+      "long_word_count": 5,
+      "sentence_count": 4,
+      "avg_sentence_length": 12.8,
+      "complex_structures": 0,
+      "discourse_markers": 0,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 5,
+        "lexical_resource": 6.5,
+        "grammatical_range": 5.5,
+        "overall": 5.5
+      },
+      "pronunciation": {
+        "score": 7,
+        "avg_confidence": 0.814,
+        "clarity": "Mostly clear",
+        "low_confidence_words": [
+          {
+            "word": "also",
+            "probability": 0.141
+          },
+          {
+            "word": "sharks,",
+            "probability": 0.244
+          },
+          {
+            "word": "Well,",
+            "probability": 0.253
+          },
+          {
+            "word": "pigeons",
+            "probability": 0.299
+          },
+          {
+            "word": "black",
+            "probability": 0.383
+          },
+          {
+            "word": "wild",
+            "probability": 0.392
+          },
+          {
+            "word": "mountain.",
+            "probability": 0.441
+          },
+          {
+            "word": "fishes",
+            "probability": 0.487
+          },
+          {
+            "word": "animals?",
+            "probability": 0.497
+          }
+        ],
+        "total_words": 51,
+        "unclear_count": 9
+      }
+    },
+    {
+      "word_count": 58,
+      "wpm": 77,
+      "filler_count": 0,
+      "unique_words": 37,
+      "vocabulary_diversity": 0.64,
+      "avg_word_length": 4.2,
+      "long_word_count": 5,
+      "sentence_count": 4,
+      "avg_sentence_length": 14.5,
+      "complex_structures": 2,
+      "discourse_markers": 1,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 6,
+        "lexical_resource": 7,
+        "grammatical_range": 6.5,
+        "overall": 6.5
+      },
+      "pronunciation": {
+        "score": 6.5,
+        "avg_confidence": 0.756,
+        "clarity": "Mostly clear",
+        "low_confidence_words": [
+          {
+            "word": "Do",
+            "probability": 0.034
+          },
+          {
+            "word": "at",
+            "probability": 0.12
+          },
+          {
+            "word": "in",
+            "probability": 0.131
+          },
+          {
+            "word": "the",
+            "probability": 0.148
+          },
+          {
+            "word": "that",
+            "probability": 0.164
+          },
+          {
+            "word": "in",
+            "probability": 0.185
+          },
+          {
+            "word": "with",
+            "probability": 0.283
+          },
+          {
+            "word": "time,",
+            "probability": 0.298
+          },
+          {
+            "word": "a",
+            "probability": 0.388
+          },
+          {
+            "word": "every",
+            "probability": 0.415
+          }
+        ],
+        "total_words": 58,
+        "unclear_count": 11
+      }
+    },
+    {
+      "word_count": 50,
+      "wpm": 67,
+      "filler_count": 0,
+      "unique_words": 32,
+      "vocabulary_diversity": 0.64,
+      "avg_word_length": 4.7,
+      "long_word_count": 6,
+      "sentence_count": 2,
+      "avg_sentence_length": 25,
+      "complex_structures": 2,
+      "discourse_markers": 1,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 6,
+        "lexical_resource": 7.5,
+        "grammatical_range": 7,
+        "overall": 7
+      },
+      "pronunciation": {
+        "score": 7,
+        "avg_confidence": 0.801,
+        "clarity": "Mostly clear",
+        "low_confidence_words": [
+          {
+            "word": "clothing,",
+            "probability": 0.064
+          },
+          {
+            "word": "the",
+            "probability": 0.14
+          },
+          {
+            "word": "when",
+            "probability": 0.249
+          },
+          {
+            "word": "best",
+            "probability": 0.262
+          },
+          {
+            "word": "so",
+            "probability": 0.305
+          },
+          {
+            "word": "than",
+            "probability": 0.306
+          },
+          {
+            "word": "a",
+            "probability": 0.319
+          },
+          {
+            "word": "shopping",
+            "probability": 0.404
+          },
+          {
+            "word": "the",
+            "probability": 0.497
+          }
+        ],
+        "total_words": 50,
+        "unclear_count": 9
+      }
+    },
+    {
+      "word_count": 60,
+      "wpm": 80,
+      "filler_count": 1,
+      "unique_words": 38,
+      "vocabulary_diversity": 0.63,
+      "avg_word_length": 3.6,
+      "long_word_count": 3,
+      "sentence_count": 3,
+      "avg_sentence_length": 20,
+      "complex_structures": 1,
+      "discourse_markers": 0,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 5.5,
+        "lexical_resource": 6.5,
+        "grammatical_range": 6.5,
+        "overall": 6
+      },
+      "pronunciation": {
+        "score": 6.5,
+        "avg_confidence": 0.771,
+        "clarity": "Mostly clear",
+        "low_confidence_words": [
+          {
+            "word": "who",
+            "probability": 0.003
+          },
+          {
+            "word": "have",
+            "probability": 0.013
+          },
+          {
+            "word": "they",
+            "probability": 0.076
+          },
+          {
+            "word": "healthy?",
+            "probability": 0.177
+          },
+          {
+            "word": "healthy.",
+            "probability": 0.199
+          },
+          {
+            "word": "gym",
+            "probability": 0.209
+          },
+          {
+            "word": "daily",
+            "probability": 0.237
+          },
+          {
+            "word": "so",
+            "probability": 0.246
+          },
+          {
+            "word": "tend",
+            "probability": 0.282
+          },
+          {
+            "word": "Is",
+            "probability": 0.335
+          }
+        ],
+        "total_words": 60,
+        "unclear_count": 11
+      }
+    },
+    {
+      "word_count": 59,
+      "wpm": 79,
+      "filler_count": 2,
+      "unique_words": 35,
+      "vocabulary_diversity": 0.59,
+      "avg_word_length": 3.5,
+      "long_word_count": 6,
+      "sentence_count": 5,
+      "avg_sentence_length": 11.8,
+      "complex_structures": 2,
+      "discourse_markers": 0,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 5.5,
+        "lexical_resource": 6.5,
+        "grammatical_range": 6,
+        "overall": 6
+      },
+      "pronunciation": {
+        "score": 6.5,
+        "avg_confidence": 0.731,
+        "clarity": "Mostly clear",
+        "low_confidence_words": [
+          {
+            "word": "pen",
+            "probability": 0.012
+          },
+          {
+            "word": "a",
+            "probability": 0.041
+          },
+          {
+            "word": "to",
+            "probability": 0.074
+          },
+          {
+            "word": "draw",
+            "probability": 0.088
+          },
+          {
+            "word": "as",
+            "probability": 0.125
+          },
+          {
+            "word": "my",
+            "probability": 0.151
+          },
+          {
+            "word": "crossing",
+            "probability": 0.221
+          },
+          {
+            "word": "with",
+            "probability": 0.225
+          },
+          {
+            "word": "younger?",
+            "probability": 0.291
+          },
+          {
+            "word": "Did",
+            "probability": 0.315
+          }
+        ],
+        "total_words": 59,
+        "unclear_count": 14
+      }
+    }
+  ],
+  "saved_at": "2026-02-19T04:57:29.556321"
+}

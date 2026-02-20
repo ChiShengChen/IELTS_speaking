@@ -1,0 +1,171 @@
+{
+  "session_id": "mltf4pjg7zvv",
+  "type": "part1",
+  "created_at": "2026-02-19T12:10:18.628Z",
+  "questions": [
+    "What do you do with broken things?",
+    "How important is the colour of a car to you?",
+    "What kind of lost things have you found in a public place?",
+    "Did you eat a lot of ice cream as a kid?",
+    "Have you ever been to a zoo or safari park?"
+  ],
+  "sample_answers": [
+    "With broken things, my first response is to see if I can fix it. A lot of things I already know how to fix, and if\nnot, I will just watch a video online teaching me how to fix it. If I can’t fix it, I will donate it to someone who\ncan.",
+    "The colour of a car is not important to me. I care more about a car’s specifications and features; I enjoy\ngood quality cars that drive well and are very fast! It does not matter to me what colour the car is.",
+    "I often find quite mundane items that people have lost in public places. A common example of lost\nitems I have found are umbrellas and gloves. People often leave these behind by accident on cold or\nrainy days.",
+    "I rarely ate ice cream when I was a kid. My parents were very healthy and they thought it was better if children\ndidn’t eat a lot of sugar. So, we only had ice cream on very special occasions.",
+    "Yes, I have been to many zoos and was even lucky enough to once visit a safari park with my parents. There is\na zoo in my home city, and growing up I would visit often. Once, my parents took me to the Guangzhou\nChimelong Safari Park as a reward for doing well in my exams."
+  ],
+  "transcripts": [
+    "Oh, I'll give you a new one.  So, I'll see you later.  Oh, you said, oh, oh, it's all over.  It's all over.",
+    "Like this?  Same one, same one, same question  Ok, it's good",
+    "(No speech detected)",
+    "(No speech detected)",
+    "(No speech detected)"
+  ],
+  "durations": [
+    11.3,
+    8.5,
+    0,
+    0,
+    0
+  ],
+  "analyses": [
+    {
+      "word_count": 23,
+      "wpm": 122,
+      "filler_count": 0,
+      "unique_words": 14,
+      "vocabulary_diversity": 0.61,
+      "avg_word_length": 3.1,
+      "long_word_count": 0,
+      "sentence_count": 4,
+      "avg_sentence_length": 5.8,
+      "complex_structures": 0,
+      "discourse_markers": 0,
+      "repeated_words": [
+        "oh"
+      ],
+      "band": {
+        "fluency_coherence": 5.5,
+        "lexical_resource": 5,
+        "grammatical_range": 4,
+        "overall": 5
+      },
+      "pronunciation": {
+        "score": 4,
+        "avg_confidence": 0.367,
+        "clarity": "Needs improvement",
+        "low_confidence_words": [
+          {
+            "word": "over.",
+            "probability": 0.061
+          },
+          {
+            "word": "new",
+            "probability": 0.088
+          },
+          {
+            "word": "Oh,",
+            "probability": 0.138
+          },
+          {
+            "word": "see",
+            "probability": 0.141
+          },
+          {
+            "word": "So,",
+            "probability": 0.178
+          },
+          {
+            "word": "oh,",
+            "probability": 0.186
+          },
+          {
+            "word": "I'll",
+            "probability": 0.199
+          },
+          {
+            "word": "one.",
+            "probability": 0.214
+          },
+          {
+            "word": "later.",
+            "probability": 0.227
+          },
+          {
+            "word": "oh,",
+            "probability": 0.325
+          }
+        ],
+        "total_words": 23,
+        "unclear_count": 19
+      }
+    },
+    {
+      "word_count": 11,
+      "wpm": 78,
+      "filler_count": 1,
+      "unique_words": 8,
+      "vocabulary_diversity": 0.73,
+      "avg_word_length": 4,
+      "long_word_count": 1,
+      "sentence_count": 2,
+      "avg_sentence_length": 5.5,
+      "complex_structures": 0,
+      "discourse_markers": 0,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 4,
+        "lexical_resource": 6,
+        "grammatical_range": 4,
+        "overall": 4.5
+      },
+      "pronunciation": {
+        "score": 4,
+        "avg_confidence": 0.311,
+        "clarity": "Needs improvement",
+        "low_confidence_words": [
+          {
+            "word": "Ok,",
+            "probability": 0
+          },
+          {
+            "word": "one,",
+            "probability": 0.027
+          },
+          {
+            "word": "Same",
+            "probability": 0.028
+          },
+          {
+            "word": "Like",
+            "probability": 0.079
+          },
+          {
+            "word": "good",
+            "probability": 0.157
+          },
+          {
+            "word": "question",
+            "probability": 0.208
+          },
+          {
+            "word": "one,",
+            "probability": 0.328
+          },
+          {
+            "word": "it's",
+            "probability": 0.398
+          }
+        ],
+        "total_words": 11,
+        "unclear_count": 8
+      }
+    },
+    {},
+    {},
+    {}
+  ],
+  "saved_at": "2026-02-19T07:10:18.629989"
+}

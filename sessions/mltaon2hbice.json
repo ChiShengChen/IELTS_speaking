@@ -1,0 +1,266 @@
+{
+  "session_id": "mltaon2hbice",
+  "type": "part2",
+  "created_at": "2026-02-19T10:11:19.315Z",
+  "topic": "Describe a gift you would like to buy for a friend.\nYou should say:\n- How well you know this friend\n- How much time you spend with him/her\n- What type of gift you would like to buy him/her\nAnd explain why you would like to buy this gift for your friend.",
+  "notes": "",
+  "transcript": "I'd like to talk about a special gift I'm planning to buy for my close friend, Edin.  We have long disorders since our university days.  So I'd say I know him inside out.  We share a lot of common interest, especially when it comes to Japanese culture and animation.  Even though I'm currently based in Boston and he's based in Taiwan,  we still spend a significant moment of time chatting online almost every week  and discussing the latest series or gaming news.  The game I have in my limited edition anime figure from a popular series with both adore.  I'm hoping to grab it in a major and many conventions as coming on soon.  This figure are quite rare and usually only available as a specific book during that event in the state.  Since I know he's been icing this particular character for a long time,  but couldn't find it anywhere, I think it would be the perfect surprise.  I really want to buy this for him because he has been such a  separated friend over the years.  For instance, when I was struggling with my research in university,  he was always there to listen and cheer me up, although it might be a bit expensive and  require me to dwell in a long queue at the convention. I believe it is worth the effort.",
+  "duration": 120,
+  "analysis": {
+    "word_count": 225,
+    "wpm": 112,
+    "filler_count": 1,
+    "unique_words": 146,
+    "vocabulary_diversity": 0.65,
+    "avg_word_length": 4.3,
+    "long_word_count": 36,
+    "sentence_count": 12,
+    "avg_sentence_length": 18.8,
+    "complex_structures": 6,
+    "discourse_markers": 5,
+    "repeated_words": [],
+    "band": {
+      "fluency_coherence": 7,
+      "lexical_resource": 7.5,
+      "grammatical_range": 8,
+      "overall": 7.5
+    },
+    "pronunciation": {
+      "score": 7.5,
+      "avg_confidence": 0.861,
+      "clarity": "Clear",
+      "low_confidence_words": [
+        {
+          "word": "require",
+          "probability": 0.028
+        },
+        {
+          "word": "and",
+          "probability": 0.059
+        },
+        {
+          "word": "disorders",
+          "probability": 0.134
+        },
+        {
+          "word": "coming",
+          "probability": 0.182
+        },
+        {
+          "word": "This",
+          "probability": 0.232
+        },
+        {
+          "word": "adore.",
+          "probability": 0.28
+        },
+        {
+          "word": "Edin.",
+          "probability": 0.366
+        },
+        {
+          "word": "at",
+          "probability": 0.378
+        },
+        {
+          "word": "a",
+          "probability": 0.387
+        },
+        {
+          "word": "dwell",
+          "probability": 0.392
+        }
+      ],
+      "total_words": 225,
+      "unclear_count": 17
+    }
+  },
+  "sample_answer": "I'd like to talk about a special gift I'm planning to buy for my close friend, YiLin. We've known each other since our university days at NTU, so I'd say I know him inside out. We share a lot of common interests, especially when it comes to Japanese culture and animation. Even though I'm currently based in Boston and he's back in Taiwan, we still spend a significant amount of time chatting online every week, discussing the latest series or gaming news.\n\nThe gift I have in mind is a limited-edition anime figure from a popular series we both adore. I'm hoping to grab it at a major anime convention that's coming up soon. These figures are quite rare and usually only available at specific booths during the event. Since I know he's been eyeing this particular character for a long time but couldn't find it anywhere, I think it would be the perfect surprise.\n\nI really want to buy this for him because he's been such a supportive friend over the years. For instance, when I was struggling with my research at Harvard, he was always there to listen and cheer me up. Although it might be a bit expensive and require me to wait in a long queue at the convention, I believe it's worth the effort. Seeing his reaction when he finally adds it to his collection would be incredibly rewarding for me, as it's a way to celebrate our long-standing friendship.",
+  "part3": {
+    "questions": [
+      "How important is it for people to consider the personality of a friend when choosing a gift for them?",
+      "What are the advantages and disadvantages of giving money instead of a physical gift on special occasions?",
+      "Do you think the commercialization of gift-giving has changed the way people perceive the value of friendship?"
+    ],
+    "transcripts": [
+      "Oh, I think this is quite important, because sending a gift to a friend can to maintain  or relationship is like, oh, I have received a gift from my best friend.  That means, oh, the friend still remembers me, and we can, based on this gift,  has some conversation to greeting each other and chat with him about what is interesting  he made in these days. So, I think sending a gift to a friend is quite important.",
+      "Where are the advantages and disadvantages for giving money instead of a physical gift or special occasions?  I see no advantage of giving money is quite convenient for friends because giving money has a lot of, I don't know, let's pass.",
+      "Do you think conversation keep giving a chance that way people perspective and value or friendship?  I don't think so."
+    ],
+    "durations": [
+      60,
+      34.4,
+      30.3
+    ],
+    "analyses": [
+      {
+        "word_count": 78,
+        "wpm": 78,
+        "filler_count": 1,
+        "unique_words": 51,
+        "vocabulary_diversity": 0.65,
+        "avg_word_length": 4.1,
+        "long_word_count": 10,
+        "sentence_count": 3,
+        "avg_sentence_length": 26,
+        "complex_structures": 1,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 6,
+          "lexical_resource": 7.5,
+          "grammatical_range": 6.5,
+          "overall": 6.5
+        },
+        "pronunciation": {
+          "score": 7,
+          "avg_confidence": 0.798,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "sending",
+              "probability": 0.012
+            },
+            {
+              "word": "a",
+              "probability": 0.05
+            },
+            {
+              "word": "greeting",
+              "probability": 0.117
+            },
+            {
+              "word": "to",
+              "probability": 0.168
+            },
+            {
+              "word": "has",
+              "probability": 0.221
+            },
+            {
+              "word": "Oh,",
+              "probability": 0.279
+            },
+            {
+              "word": "oh,",
+              "probability": 0.305
+            },
+            {
+              "word": "or",
+              "probability": 0.316
+            },
+            {
+              "word": "these",
+              "probability": 0.317
+            },
+            {
+              "word": "That",
+              "probability": 0.449
+            }
+          ],
+          "total_words": 78,
+          "unclear_count": 11
+        }
+      },
+      {
+        "word_count": 41,
+        "wpm": 72,
+        "filler_count": 0,
+        "unique_words": 32,
+        "vocabulary_diversity": 0.78,
+        "avg_word_length": 4.7,
+        "long_word_count": 10,
+        "sentence_count": 2,
+        "avg_sentence_length": 20.5,
+        "complex_structures": 1,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 6,
+          "lexical_resource": 8,
+          "grammatical_range": 6.5,
+          "overall": 7
+        },
+        "pronunciation": {
+          "score": 7,
+          "avg_confidence": 0.829,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "a",
+              "probability": 0.256
+            },
+            {
+              "word": "Where",
+              "probability": 0.284
+            },
+            {
+              "word": "no",
+              "probability": 0.37
+            },
+            {
+              "word": "advantages",
+              "probability": 0.42
+            },
+            {
+              "word": "disadvantages",
+              "probability": 0.448
+            }
+          ],
+          "total_words": 41,
+          "unclear_count": 5
+        }
+      },
+      {
+        "word_count": 20,
+        "wpm": 40,
+        "filler_count": 0,
+        "unique_words": 19,
+        "vocabulary_diversity": 0.95,
+        "avg_word_length": 4.8,
+        "long_word_count": 3,
+        "sentence_count": 2,
+        "avg_sentence_length": 10,
+        "complex_structures": 0,
+        "discourse_markers": 0,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5.5,
+          "lexical_resource": 7,
+          "grammatical_range": 5,
+          "overall": 6
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.737,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "conversation",
+              "probability": 0.188
+            },
+            {
+              "word": "that",
+              "probability": 0.233
+            },
+            {
+              "word": "keep",
+              "probability": 0.248
+            },
+            {
+              "word": "Do",
+              "probability": 0.275
+            },
+            {
+              "word": "and",
+              "probability": 0.419
+            }
+          ],
+          "total_words": 20,
+          "unclear_count": 5
+        }
+      }
+    ]
+  },
+  "saved_at": "2026-02-19T05:11:19.317115"
+}

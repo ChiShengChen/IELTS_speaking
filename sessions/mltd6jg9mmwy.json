@@ -1,0 +1,651 @@
+{
+  "session_id": "mltd6jg9mmwy",
+  "type": "mock",
+  "created_at": "2026-02-19T11:26:25.321Z",
+  "part1": {
+    "questions": [
+      "What's your favourite kind of exercise?",
+      "Do you think people will use email more or less in the future?",
+      "Have you seen any shows about wild animals recently?",
+      "Do you like to do the same things every weekend?",
+      "Did you always pay attention in class when you were a kid?"
+    ],
+    "sample_answers": [
+      "My preferred way of staying in shape are gentle exercises such as jogging or fun things like playing Ping-pong\nwith my friends. I think exercise can be part of a normal lifestyle and your day to day activities.",
+      "I think people will use email more in the future. The world is becoming a more technologically focused\nplace and emails are at the heart of all technologically based industries. I think as the world develops,\nwe will send more and more emails.",
+      "I don’t really watch TV shows about wild animals, I think they are boring. Most nature documentaries are the\nsame, they show predators and prey in their natural environments. It feels too much like a school lesson to me!",
+      "I do not like doing the same things every weekend. I think variety is very important in life, so during\nmy free time I like to try new things. Whether this is trying a new restaurant, watching a new movie,\nor hanging out with new people!",
+      "I was very attentive in the classroom when I was a child. My parents raised me with a lot of discipline and\ntaught me to always respect my elders. Therefore, I focused hard and listened to every word my teacher said\nwhen I was in school."
+    ],
+    "transcripts": [
+      "My favorite kind of exercise is pepmentin,  because I have learned pepmentin for a lot of years since I was elementary students.  I learned pepmentin because it is fast and you need some strategy,  so you are not only using your muscles,  but using your brain to do this exercise.  It is very, very fun and can refresh my mind for a while.  I have learned pepmentin because I have learned pepmentin.",
+      "In my opinion, I see people may use more email in the future  Because  Nowadays, a lot of person has a lot of things  Like for working, from studying, even for a family  A lot of stuff you can  Like taking form to call someone simultaneously  So using text, email, you can describe more detail",
+      "Yeah, I have seen a film about Ping-Gwin several days ago on YouTube that film describes someone who is traveling into the North Pole.  So, to see a lot of Ping-Gwin but I've seen this crap boring because every animal I get covered in looks like sand.",
+      "I don't like to do the same things every weekend because for me, I love to try new things  which can enhance my experience some days.  Oh yeah, I don't know why I want to talk so let's all.",
+      "Yeah, I was a tentative student when I was a child because my family has raised a lot of displays on me.  My mom said that you should give it really respect for elders so I pay attention to teachers always  when I was in the class. So yeah, that's all."
+    ],
+    "durations": [
+      45,
+      45,
+      45,
+      34,
+      35
+    ],
+    "analyses": [
+      {
+        "word_count": 72,
+        "wpm": 96,
+        "filler_count": 1,
+        "unique_words": 44,
+        "vocabulary_diversity": 0.61,
+        "avg_word_length": 4.4,
+        "long_word_count": 10,
+        "sentence_count": 4,
+        "avg_sentence_length": 18,
+        "complex_structures": 5,
+        "discourse_markers": 5,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 6,
+          "lexical_resource": 6,
+          "grammatical_range": 5.5,
+          "overall": 6
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.73,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "because",
+              "probability": 0.001
+            },
+            {
+              "word": "learned",
+              "probability": 0.002
+            },
+            {
+              "word": "pepmentin",
+              "probability": 0.016
+            },
+            {
+              "word": "have",
+              "probability": 0.05
+            },
+            {
+              "word": "have",
+              "probability": 0.074
+            },
+            {
+              "word": "I",
+              "probability": 0.077
+            },
+            {
+              "word": "are",
+              "probability": 0.125
+            },
+            {
+              "word": "learned",
+              "probability": 0.169
+            },
+            {
+              "word": "I",
+              "probability": 0.187
+            },
+            {
+              "word": "this",
+              "probability": 0.276
+            }
+          ],
+          "total_words": 72,
+          "unclear_count": 14
+        }
+      },
+      {
+        "word_count": 55,
+        "wpm": 73,
+        "filler_count": 2,
+        "unique_words": 41,
+        "vocabulary_diversity": 0.75,
+        "avg_word_length": 4.1,
+        "long_word_count": 8,
+        "sentence_count": 1,
+        "avg_sentence_length": 55,
+        "complex_structures": 1,
+        "discourse_markers": 2,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5,
+          "lexical_resource": 6.5,
+          "grammatical_range": 5.5,
+          "overall": 5.5
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.76,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "Like",
+              "probability": 0.004
+            },
+            {
+              "word": "Nowadays,",
+              "probability": 0.121
+            },
+            {
+              "word": "A",
+              "probability": 0.138
+            },
+            {
+              "word": "Because",
+              "probability": 0.169
+            },
+            {
+              "word": "text,",
+              "probability": 0.271
+            },
+            {
+              "word": "things",
+              "probability": 0.319
+            },
+            {
+              "word": "So",
+              "probability": 0.374
+            },
+            {
+              "word": "taking",
+              "probability": 0.399
+            },
+            {
+              "word": "from",
+              "probability": 0.465
+            },
+            {
+              "word": "person",
+              "probability": 0.484
+            }
+          ],
+          "total_words": 55,
+          "unclear_count": 11
+        }
+      },
+      {
+        "word_count": 47,
+        "wpm": 63,
+        "filler_count": 1,
+        "unique_words": 42,
+        "vocabulary_diversity": 0.89,
+        "avg_word_length": 4.3,
+        "long_word_count": 8,
+        "sentence_count": 2,
+        "avg_sentence_length": 23.5,
+        "complex_structures": 2,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5,
+          "lexical_resource": 6.5,
+          "grammatical_range": 5.5,
+          "overall": 5.5
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.72,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "Ping",
+              "probability": 0.001
+            },
+            {
+              "word": "that",
+              "probability": 0.193
+            },
+            {
+              "word": "Yeah,",
+              "probability": 0.212
+            },
+            {
+              "word": "several",
+              "probability": 0.252
+            },
+            {
+              "word": "I",
+              "probability": 0.276
+            },
+            {
+              "word": "looks",
+              "probability": 0.279
+            },
+            {
+              "word": "this",
+              "probability": 0.35
+            },
+            {
+              "word": "but",
+              "probability": 0.361
+            },
+            {
+              "word": "-Gwin",
+              "probability": 0.372
+            },
+            {
+              "word": "in",
+              "probability": 0.378
+            }
+          ],
+          "total_words": 49,
+          "unclear_count": 15
+        }
+      },
+      {
+        "word_count": 39,
+        "wpm": 69,
+        "filler_count": 1,
+        "unique_words": 32,
+        "vocabulary_diversity": 0.82,
+        "avg_word_length": 3.7,
+        "long_word_count": 4,
+        "sentence_count": 2,
+        "avg_sentence_length": 19.5,
+        "complex_structures": 2,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5,
+          "lexical_resource": 5.5,
+          "grammatical_range": 5.5,
+          "overall": 5.5
+        },
+        "pronunciation": {
+          "score": 7,
+          "avg_confidence": 0.807,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "Oh",
+              "probability": 0.174
+            },
+            {
+              "word": "so",
+              "probability": 0.259
+            },
+            {
+              "word": "for",
+              "probability": 0.46
+            }
+          ],
+          "total_words": 39,
+          "unclear_count": 3
+        }
+      },
+      {
+        "word_count": 51,
+        "wpm": 87,
+        "filler_count": 0,
+        "unique_words": 40,
+        "vocabulary_diversity": 0.78,
+        "avg_word_length": 3.8,
+        "long_word_count": 7,
+        "sentence_count": 3,
+        "avg_sentence_length": 17,
+        "complex_structures": 3,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5.5,
+          "lexical_resource": 6,
+          "grammatical_range": 5,
+          "overall": 5.5
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.762,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "displays",
+              "probability": 0.194
+            },
+            {
+              "word": "when",
+              "probability": 0.204
+            },
+            {
+              "word": "yeah,",
+              "probability": 0.212
+            },
+            {
+              "word": "it",
+              "probability": 0.267
+            },
+            {
+              "word": "raised",
+              "probability": 0.286
+            },
+            {
+              "word": "so",
+              "probability": 0.292
+            },
+            {
+              "word": "really",
+              "probability": 0.31
+            },
+            {
+              "word": "was",
+              "probability": 0.396
+            },
+            {
+              "word": "respect",
+              "probability": 0.463
+            }
+          ],
+          "total_words": 51,
+          "unclear_count": 9
+        }
+      }
+    ]
+  },
+  "part2": {
+    "topic": "Describe a time when you lost your way.\nYou should say:\n- When it was\n- Where you went\n- How you got lost\nAnd explain what happened after you lost your way.",
+    "topic_id": "42-1",
+    "notes": "animation convention\nlast summer\nhard to find the way",
+    "transcript": "When there is a routine like I went to the anime convention every summer.  So, I got lost my way in the summer and the big anime convention.  So, there was crowded and a lot of people like see, I don't know how I need to talk to about.",
+    "duration": 120,
+    "analysis": {
+      "word_count": 49,
+      "wpm": 24,
+      "filler_count": 2,
+      "unique_words": 34,
+      "vocabulary_diversity": 0.69,
+      "avg_word_length": 3.7,
+      "long_word_count": 3,
+      "sentence_count": 3,
+      "avg_sentence_length": 16.3,
+      "complex_structures": 1,
+      "discourse_markers": 0,
+      "repeated_words": [],
+      "band": {
+        "fluency_coherence": 5,
+        "lexical_resource": 5.5,
+        "grammatical_range": 5,
+        "overall": 5
+      },
+      "pronunciation": {
+        "score": 6,
+        "avg_confidence": 0.696,
+        "clarity": "Some unclear words",
+        "low_confidence_words": [
+          {
+            "word": "there",
+            "probability": 0.066
+          },
+          {
+            "word": "like",
+            "probability": 0.169
+          },
+          {
+            "word": "When",
+            "probability": 0.196
+          },
+          {
+            "word": "went",
+            "probability": 0.22
+          },
+          {
+            "word": "So,",
+            "probability": 0.233
+          },
+          {
+            "word": "I",
+            "probability": 0.267
+          },
+          {
+            "word": "about.",
+            "probability": 0.327
+          },
+          {
+            "word": "see,",
+            "probability": 0.35
+          },
+          {
+            "word": "lost",
+            "probability": 0.403
+          },
+          {
+            "word": "need",
+            "probability": 0.419
+          }
+        ],
+        "total_words": 49,
+        "unclear_count": 12
+      }
+    },
+    "sample_answer": "I remember a time I got completely lost during a five-day trip to Tokyo with my friend YiLin. It happened on our second day when we decided to explore Shinjuku, which is one of the busiest districts in the world. We were trying to find a specific department store, but we ended up inside Shinjuku Station, which is notorious for being a massive, underground maze.\n\nWe got lost because the station has dozens of exits and endless interconnected passages. Even though we were following a travel guide I'd read multiple times, the sheer scale of the place was overwhelming. We kept following signs that seemed to lead to the surface, but we would just end up in another subterranean shopping mall or a different train platform. To make matters worse, the air down there was quite stuffy and crowded, which made us feel even more disoriented and a bit stressed.\n\nEventually, we decided to stop rushing and just sat down for a moment to check our GPS properly. We realized we had been walking in the wrong direction for about twenty minutes. After we calmed down, we managed to find a map near one of the ticket gates and followed the color-coded lines to the correct exit. Although we were exhausted by the time we finally reached the street, we both just looked at each other and laughed about how we'd been defeated by a train station. It was a memorable experience that taught me to always double-check the exit number before entering a large station in Japan."
+  },
+  "part3": {
+    "questions": [
+      "How important is it for people to have good spatial awareness and navigation skills?",
+      "In what ways has the widespread use of GPS technology changed how people explore new places?",
+      "Do you think that people are losing their ability to solve problems without the help of digital tools?"
+    ],
+    "transcripts": [
+      "I think it's important for people to have a special awareness and navigation skills,  because when someone in a dangerous or non-familiar way, the individuals will find a way that he can get out,  if someone don't have these skills, they must have another tools like Google Maps or GPS to help him or her to find a right way to get out.",
+      "The JPM technology is quite important, even I can say that it is the greatest innovation  in human history, one of the most important in human history.  So, with GPS, the person can explore some way, it's unknown to him or her, and can  matter like science or history, relic, discover more efficiently and more precisely.  Also, the GPS technology can provide a new way to describe the coordinate of the space.",
+      "I don't know for some certain level, maybe yes, because people are more and more relied  on the new technology than before, right?  So, like, if we have a cell phone, people can more and more rely on it and loss their original  ability to, like, find a way with knowledge GPS, or, like, talk with someone without  impression, or loss their conversation in the direction."
+    ],
+    "durations": [
+      60,
+      60,
+      60
+    ],
+    "analyses": [
+      {
+        "word_count": 63,
+        "wpm": 63,
+        "filler_count": 1,
+        "unique_words": 46,
+        "vocabulary_diversity": 0.73,
+        "avg_word_length": 4.2,
+        "long_word_count": 10,
+        "sentence_count": 1,
+        "avg_sentence_length": 63,
+        "complex_structures": 3,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5,
+          "lexical_resource": 6.5,
+          "grammatical_range": 6,
+          "overall": 6
+        },
+        "pronunciation": {
+          "score": 6.5,
+          "avg_confidence": 0.742,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "if",
+              "probability": 0.013
+            },
+            {
+              "word": "I",
+              "probability": 0.108
+            },
+            {
+              "word": "they",
+              "probability": 0.124
+            },
+            {
+              "word": "out.",
+              "probability": 0.271
+            },
+            {
+              "word": "GPS",
+              "probability": 0.31
+            },
+            {
+              "word": "a",
+              "probability": 0.332
+            },
+            {
+              "word": "because",
+              "probability": 0.39
+            },
+            {
+              "word": "way,",
+              "probability": 0.426
+            },
+            {
+              "word": "these",
+              "probability": 0.429
+            },
+            {
+              "word": "think",
+              "probability": 0.432
+            }
+          ],
+          "total_words": 64,
+          "unclear_count": 14
+        }
+      },
+      {
+        "word_count": 72,
+        "wpm": 72,
+        "filler_count": 1,
+        "unique_words": 49,
+        "vocabulary_diversity": 0.68,
+        "avg_word_length": 4.5,
+        "long_word_count": 14,
+        "sentence_count": 3,
+        "avg_sentence_length": 24,
+        "complex_structures": 0,
+        "discourse_markers": 0,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 5,
+          "lexical_resource": 7,
+          "grammatical_range": 5.5,
+          "overall": 6
+        },
+        "pronunciation": {
+          "score": 7,
+          "avg_confidence": 0.803,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "matter",
+              "probability": 0.09
+            },
+            {
+              "word": "The",
+              "probability": 0.159
+            },
+            {
+              "word": "JPM",
+              "probability": 0.197
+            },
+            {
+              "word": "coordinate",
+              "probability": 0.201
+            },
+            {
+              "word": "Also,",
+              "probability": 0.322
+            },
+            {
+              "word": "one",
+              "probability": 0.407
+            },
+            {
+              "word": "it",
+              "probability": 0.425
+            },
+            {
+              "word": "say",
+              "probability": 0.447
+            }
+          ],
+          "total_words": 72,
+          "unclear_count": 8
+        }
+      },
+      {
+        "word_count": 66,
+        "wpm": 66,
+        "filler_count": 3,
+        "unique_words": 51,
+        "vocabulary_diversity": 0.77,
+        "avg_word_length": 4.3,
+        "long_word_count": 11,
+        "sentence_count": 2,
+        "avg_sentence_length": 33,
+        "complex_structures": 2,
+        "discourse_markers": 1,
+        "repeated_words": [],
+        "band": {
+          "fluency_coherence": 4.5,
+          "lexical_resource": 6.5,
+          "grammatical_range": 6,
+          "overall": 5.5
+        },
+        "pronunciation": {
+          "score": 7,
+          "avg_confidence": 0.785,
+          "clarity": "Mostly clear",
+          "low_confidence_words": [
+            {
+              "word": "their",
+              "probability": 0.002
+            },
+            {
+              "word": "impression,",
+              "probability": 0.007
+            },
+            {
+              "word": "or",
+              "probability": 0.015
+            },
+            {
+              "word": "in",
+              "probability": 0.129
+            },
+            {
+              "word": "knowledge",
+              "probability": 0.222
+            },
+            {
+              "word": "without",
+              "probability": 0.333
+            },
+            {
+              "word": "ability",
+              "probability": 0.363
+            },
+            {
+              "word": "for",
+              "probability": 0.383
+            },
+            {
+              "word": "direction.",
+              "probability": 0.406
+            },
+            {
+              "word": "I",
+              "probability": 0.456
+            }
+          ],
+          "total_words": 66,
+          "unclear_count": 13
+        }
+      }
+    ],
+    "sample_answers": [
+      "I believe that spatial awareness and navigation skills remain highly important, despite the prevalence of digital aids. These skills are fundamental for safety and for developing a better understanding of one's surroundings. For instance, when I was navigating the crowded venue of an anime convention in Taipei, having a good sense of direction was crucial for finding my way through the masses. Moreover, being able to read a map or orient oneself without a phone fosters a sense of independence and confidence. While technology is a great assistant, relying solely on it can make us vulnerable in situations where digital tools are unavailable or unreliable.",
+      "GPS technology has made exploration much more efficient and less stressful, but it has also made it more linear and less spontaneous. In the past, getting lost was often part of the adventure and led to unexpected discoveries. Now, we tend to follow the fastest route suggested by an app. For example, during my trip to Tokyo, I used GPS to navigate the complex Shinjuku station, which saved time but perhaps prevented me from truly \"experiencing\" the layout of the area. While GPS allows us to reach our destinations with ease, it can sometimes disconnect us from the physical environment we are moving through.",
+      "There is a significant risk that our reliance on digital tools is weakening our innate problem-solving abilities. We have become accustomed to instant answers and automated solutions, which can lead to mental laziness. For instance, instead of trying to fix a broken joystick on my Switch myself, the first instinct for many would be to look for a professional or buy a new one. Furthermore, the ability to think critically and troubleshoot without an internet connection is a skill that is becoming increasingly rare. While technology enhances our capabilities, we must be careful not to let it replace our fundamental cognitive skills."
+    ]
+  },
+  "saved_at": "2026-02-19T06:26:25.324487"
+}
