@@ -1546,6 +1546,7 @@ function buildMarkdown() {
     md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
     md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
     md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
+    md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
   }
 
   if (state.part2Transcript) {
@@ -1592,6 +1593,7 @@ function buildMarkdown() {
     md += `- Part 2：檢查是否遺漏 bullet points，並示範如何自然地涵蓋所有要點\n`;
     md += `- Part 3：檢查論點是否有深度，是否有正反論述，建議如何強化論證\n`;
     md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
+    md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
   }
 
   return md;
@@ -2148,6 +2150,7 @@ function _buildWritingHistoryMarkdown(s) {
   }
   md += `- 指出過於簡單或重複的表達，建議替換為 Band 7 水準的詞彙/片語\n`;
   md += `- 提供一段修正後的完整作文範例（Band 7 版本）\n`;
+  md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
   return md;
 }
 
@@ -2232,6 +2235,7 @@ function buildHistoryMarkdown(s) {
   md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
   md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
   md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
+  md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
   return md;
 }
 
@@ -2684,6 +2688,7 @@ function buildWritingMarkdown() {
   }
   md += `- 指出過於簡單或重複的表達，建議替換為 Band 7 水準的詞彙/片語\n`;
   md += `- 提供一段修正後的完整作文範例（Band 7 版本）\n`;
+  md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
 
   return md;
 }
