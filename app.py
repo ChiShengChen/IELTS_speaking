@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from faster_whisper import WhisperModel
 
-app = FastAPI(title="IELTS Speaking Practice")
+app = FastAPI(title="IELTS Speaking/Writing Practice")
 
 BASE_DIR = Path(__file__).parent
 RECORDINGS_DIR = BASE_DIR / "recordings"
