@@ -34,6 +34,11 @@
           Mock Test
           <span class="btn-desc">Part 1 &rarr; 2 &rarr; 3 · Full simulation</span>
         </button>
+        <button class="btn btn-primary btn-large" data-action="goto-free-practice">
+          <span class="btn-icon">F</span>
+          Free Practice
+          <span class="btn-desc">Open mic · No timer · Speak freely</span>
+        </button>
         <button class="btn btn-primary btn-large" data-action="goto-writing-task1-setup">
           <span class="btn-icon">W1</span>
           Writing Task 1
@@ -240,6 +245,23 @@
         <span class="writing-word-count-bar" id="writing-word-count-bar">0 words</span>
         <button class="btn btn-primary btn-small" data-action="finish-writing">Finish</button>
       </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- FREE PRACTICE                                                -->
+    <!-- ============================================================ -->
+    <section id="screen-free-practice" class="screen">
+      <div class="practice-header">
+        <span class="part-label">Free Practice</span>
+      </div>
+      <div class="free-practice-body">
+        <div class="free-rec-indicator" id="free-rec-indicator"></div>
+        <div class="free-rec-time" id="free-rec-time">00:00</div>
+        <div class="free-practice-actions">
+          <button class="btn btn-primary btn-large" id="free-rec-btn" data-action="toggle-free-rec">Start Recording</button>
+        </div>
+      </div>
+      <button class="btn btn-ghost" data-action="goto-home">&larr; Back</button>
     </section>
 
     <!-- ============================================================ -->

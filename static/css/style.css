@@ -1235,6 +1235,45 @@ textarea:focus {
 .mt-2 { margin-top: 1rem; }
 .mb-2 { margin-bottom: 1rem; }
 
+/* --- Free Practice ----------------------------------------------- */
+
+.free-practice-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 3rem 1rem;
+}
+
+.free-rec-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background 0.3s;
+}
+
+.free-rec-indicator.recording {
+  background: #e74c3c;
+  animation: pulse-rec 1s ease-in-out infinite;
+}
+
+@keyframes pulse-rec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.6); }
+  50% { box-shadow: 0 0 0 12px rgba(231, 76, 60, 0); }
+}
+
+.free-rec-time {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.free-practice-actions {
+  margin-top: 1rem;
+}
+
 /* --- Responsive -------------------------------------------------- */
 
 @media (max-width: 480px) {

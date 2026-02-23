@@ -45,6 +45,9 @@ const state = {
   writingEssay: '',
   writingTimer: null,
   writingStartTime: null,
+
+  freeResult: null,
+  freeBlob: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -145,6 +148,8 @@ document.addEventListener('click', (e) => {
     'back-to-history':    loadHistory,
     'download-session-pdf': () => { window.open(`/api/sessions/${btn.dataset.sessionId}/pdf`); },
     'copy-history-detail': copyHistoryDetail,
+    'goto-free-practice':     gotoFreePractice,
+    'toggle-free-rec':        toggleFreeRec,
     'goto-writing-task1-setup': () => gotoWritingSetup('task1'),
     'goto-writing-task2-setup': () => gotoWritingSetup('task2'),
     'reshuffle-writing':  loadWritingFile,
@@ -606,6 +611,7 @@ async function startPart1() {
   }
 
   state.mockMode = false;
+  state.freeResult = null;
   state.part1Parsed = parsed;
   state.part1Questions = parsed.map((p) => p.question);
   state.part1Answers = parsed.map((p) => p.answer || _fileAnswers[p.id] || '');
@@ -1628,7 +1634,7 @@ async function downloadPdf() {
 }
 
 async function copyResults() {
-  const md = state.writingTask ? buildWritingMarkdown() : buildMarkdown();
+  const md = state.freeResult ? buildFreeMarkdown() : state.writingTask ? buildWritingMarkdown() : buildMarkdown();
   try {
     await navigator.clipboard.writeText(md);
     const toast = $('#copy-toast');
@@ -1828,7 +1834,7 @@ function renderHistoryCard(s) {
     : 'Unknown date';
 
   const _typeLabels = {
-    part1: 'Part 1', part2: 'Part 2 & 3', mock: 'Mock Test',
+    part1: 'Part 1', part2: 'Part 2 & 3', mock: 'Mock Test', free: 'Free Practice',
     writing_task1: 'Writing Task 1', writing_task2: 'Writing Task 2',
   };
   const typeLabel = _typeLabels[s.type] || s.type || '—';
@@ -1847,7 +1853,9 @@ function renderHistoryCard(s) {
   }
 
   let detailHtml = '';
-  if (s.type === 'part1' && Array.isArray(s.questions)) {
+  if (s.type === 'free' && Array.isArray(s.durations)) {
+    detailHtml = `<div class="history-detail">${s.durations[0] || 0}s</div>`;
+  } else if (s.type === 'part1' && Array.isArray(s.questions)) {
     detailHtml = `<div class="history-detail">${s.questions.length} questions</div>`;
   } else if (s.type === 'part2' && s.topic) {
     const topicSnip = s.topic.length > 80 ? s.topic.slice(0, 80) + '…' : s.topic;
@@ -1908,7 +1916,7 @@ async function viewSessionDetail(sessionId) {
     const s = await res.json();
 
     const _detailTypeLabels = {
-      part1: 'Part 1 Practice', part2: 'Part 2 & 3 Practice', mock: 'Mock Test',
+      part1: 'Part 1 Practice', part2: 'Part 2 & 3 Practice', mock: 'Mock Test', free: 'Free Practice',
       writing_task1: 'Writing Task 1', writing_task2: 'Writing Task 2',
     };
     const typeLabel = _detailTypeLabels[s.type] || s.type || 'Session';
@@ -1933,7 +1941,7 @@ async function viewSessionDetail(sessionId) {
 
     const _p = (field) => {
       if (s.type === 'mock') return s.part1?.[field] || [];
-      if (s.type === 'part1') return s[field] || [];
+      if (s.type === 'part1' || s.type === 'free') return s[field] || [];
       return [];
     };
     const _p2 = (field, fallback) => {
@@ -2169,7 +2177,7 @@ function buildHistoryMarkdown(s) {
 
   const _p = (field) => {
     if (s.type === 'mock') return s.part1?.[field] || [];
-    if (s.type === 'part1') return s[field] || [];
+    if (s.type === 'part1' || s.type === 'free') return s[field] || [];
     return [];
   };
   const _p2 = (field, fallback) => {
@@ -2184,7 +2192,8 @@ function buildHistoryMarkdown(s) {
   const p1Samples = _p('sample_answers');
 
   if (p1Qs.length > 0) {
-    md += `## IELTS Speaking Part 1\nDate: ${now}\n\n`;
+    const p1Title = s.type === 'free' ? 'Free Practice' : 'Part 1';
+    md += `## IELTS Speaking ${p1Title}\nDate: ${now}\n\n`;
     p1Qs.forEach((q, i) => {
       md += `### Q${i + 1}\n`;
       md += `**Q:** ${q}\n`;
@@ -2304,6 +2313,132 @@ async function saveBank() {
   } catch {
     alert('Failed to save question bank.');
   }
+}
+
+// ---------------------------------------------------------------------------
+// Free Practice — open mic, no timer
+// ---------------------------------------------------------------------------
+let _freeRecording = false;
+let _freeElapsedTimer = null;
+let _freeStartTime = 0;
+
+async function gotoFreePractice() {
+  state.freeResult = null;
+  state.freeBlob = null;
+  state.sessionId = generateSessionId();
+  _freeRecording = false;
+  $('#free-rec-btn').textContent = 'Start Recording';
+  $('#free-rec-indicator').classList.remove('recording');
+  $('#free-rec-time').textContent = '00:00';
+  showScreen('free-practice');
+}
+
+async function toggleFreeRec() {
+  if (!_freeRecording) {
+    try { await state.recorder.init(); } catch { return; }
+    state.recorder.start();
+    _freeRecording = true;
+    _freeStartTime = Date.now();
+    $('#free-rec-btn').textContent = 'Stop Recording';
+    $('#free-rec-indicator').classList.add('recording');
+    _freeElapsedTimer = setInterval(() => {
+      const sec = Math.floor((Date.now() - _freeStartTime) / 1000);
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      $('#free-rec-time').textContent = `${m}:${s}`;
+    }, 500);
+  } else {
+    clearInterval(_freeElapsedTimer);
+    _freeRecording = false;
+    $('#free-rec-btn').textContent = 'Start Recording';
+    $('#free-rec-indicator').classList.remove('recording');
+
+    let blob;
+    try { blob = await state.recorder.stop(); } catch { return; }
+
+    showScreen('processing');
+    $('#processing-status').textContent = 'Sending audio to Whisper ASR';
+
+    try {
+      const result = await transcribeBlob(blob, state.sessionId, 'free_practice');
+      state.freeResult = result;
+      state.freeBlob = blob;
+
+      try {
+        const saveRes = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: state.sessionId,
+            type: 'free',
+            created_at: new Date().toISOString(),
+            questions: ['Free Practice'],
+            transcripts: [result.transcript],
+            durations: [result.duration],
+            analyses: [result.analysis || {}],
+          }),
+        });
+        const saveData = await saveRes.json();
+        if (saveData.session_id) state.sessionId = saveData.session_id;
+      } catch { /* ignore */ }
+
+      renderFreeResults(result, blob);
+    } catch {
+      alert('Transcription failed. Please try again.');
+      showScreen('free-practice');
+    }
+  }
+}
+
+function renderFreeResults(result, blob) {
+  const container = $('#results-content');
+  const title = $('#results-title');
+  title.textContent = 'Free Practice Results';
+
+  const blobUrl = URL.createObjectURL(blob);
+  const a = result.analysis || {};
+
+  container.innerHTML =
+    `<div class="hl-legend">` +
+    `<span class="hl-leg-filler">Fillers</span>` +
+    `<span class="hl-leg-discourse">Discourse markers</span>` +
+    `<span class="hl-leg-complex">Complex structures</span>` +
+    `</div>` +
+    `<div class="result-card">
+       <h4>Your Response</h4>
+       <div class="transcript-text">${highlightTranscript(result.transcript || '—')}</div>
+       <div class="duration-text">Duration: ${result.duration || 0}s</div>
+       <audio controls src="${blobUrl}"></audio>
+       ${buildAnalysisHtml(a)}
+     </div>`;
+
+  showScreen('results');
+}
+
+function buildFreeMarkdown() {
+  const r = state.freeResult;
+  if (!r) return '';
+  const now = new Date().toLocaleString();
+  const a = r.analysis || {};
+  let md = `## IELTS Speaking Free Practice\nDate: ${now}\n\n`;
+  md += `### My Response\n${r.transcript || '—'}\n`;
+  md += `**Duration:** ${r.duration || 0}s\n`;
+  md += buildAnalysisMarkdown(a);
+  md += `\n---\n\nPlease analyze my speaking response for:\n`;
+  md += `1. Fluency and coherence\n`;
+  md += `2. Lexical resource (vocabulary range)\n`;
+  md += `3. Grammatical range and accuracy\n`;
+  md += `4. Pronunciation issues (based on transcript)\n`;
+  md += `5. Estimated band score\n`;
+  md += `6. Specific suggestions for improvement\n`;
+  md += `\n**以 IELTS Band 7 為標準，請針對我的回答：**\n`;
+  md += `- 逐句標出文法錯誤、用詞不當、搭配不自然之處，並提供修正後的句子\n`;
+  md += `- 指出哪些表達過於簡單或重複，建議替換為 Band 7 水準的詞彙/片語\n`;
+  md += `- 若回答缺乏連貫性或篇章標記，示範如何加入適當的 discourse markers\n`;
+  md += `- 提供一段修正後的完整回答範例（Band 7 版本），方便我對照學習\n`;
+  md += `- 幫我逐句對比我原版與修正版範文，哪些結構上的差異與想表達但沒表達好的地方\n`;
+  md += `- 給我表格比較我原本的文章意圖與範文中的高級句子與替換句\n`;
+  return md;
 }
 
 // ---------------------------------------------------------------------------
