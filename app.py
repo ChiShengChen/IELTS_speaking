@@ -37,6 +37,30 @@ VOCAB_FILE = BASE_DIR / "topic_vocab.json"
 
 RECORDINGS_DIR.mkdir(exist_ok=True)
 SESSIONS_DIR.mkdir(exist_ok=True)
+SPEAKING_SESSIONS_DIR = SESSIONS_DIR / "speaking"
+WRITING_SESSIONS_DIR = SESSIONS_DIR / "writing"
+SPEAKING_SESSIONS_DIR.mkdir(exist_ok=True)
+WRITING_SESSIONS_DIR.mkdir(exist_ok=True)
+
+
+def _all_session_jsons() -> list[Path]:
+    """Return all session JSON files from both speaking/ and writing/ subdirs + legacy root."""
+    files: list[Path] = []
+    for d in (SPEAKING_SESSIONS_DIR, WRITING_SESSIONS_DIR, SESSIONS_DIR):
+        for f in d.glob("*.json"):
+            if f.parent == SESSIONS_DIR and f.name in (".", ".."):
+                continue
+            files.append(f)
+    return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def _find_session_file(session_id: str) -> Path | None:
+    """Find a session JSON by session_id across all directories."""
+    for d in (SPEAKING_SESSIONS_DIR, WRITING_SESSIONS_DIR, SESSIONS_DIR):
+        p = d / f"{session_id}.json"
+        if p.exists():
+            return p
+    return None
 
 # ---------------------------------------------------------------------------
 # Whisper model (lazy-loaded singleton)
@@ -449,9 +473,40 @@ async def get_vocab(topic: str = ""):
 @app.post("/api/sessions")
 async def save_session(request: Request):
     data = await request.json()
-    sid = data.get("session_id", uuid.uuid4().hex[:8])
-    data["saved_at"] = datetime.now().isoformat()
-    (SESSIONS_DIR / f"{sid}.json").write_text(
+    session_type = data.get("type", "")
+    now = datetime.now()
+    ts = now.strftime("%Y%m%d_%H%M%S")
+    data["saved_at"] = now.isoformat()
+
+    is_writing = session_type.startswith("writing")
+    sub_dir = WRITING_SESSIONS_DIR if is_writing else SPEAKING_SESSIONS_DIR
+
+    if is_writing:
+        qid = data.get("question_id") or ""
+        type_tag = session_type.replace("writing_", "WT").replace("task", "")
+    elif session_type == "part1":
+        q_ids = data.get("question_ids") or []
+        topics = sorted(set(qid.split("-")[0] for qid in q_ids if "-" in qid))
+        qid = ",".join(topics) if topics else ""
+        type_tag = "P1"
+    elif session_type == "part2":
+        tid = data.get("topic_id") or ""
+        qid = tid.split("-")[0] if "-" in tid else tid
+        type_tag = "P2"
+    elif session_type == "mock":
+        tid = (data.get("part2") or {}).get("topic_id") or ""
+        qid = tid.split("-")[0] if "-" in tid else tid
+        type_tag = "MOCK"
+    else:
+        qid = ""
+        type_tag = session_type.upper()
+
+    qid_part = f"_Q{qid}" if qid else ""
+
+    sid = f"{type_tag}{qid_part}_{ts}"
+    data["session_id"] = sid
+
+    (sub_dir / f"{sid}.json").write_text(
         json.dumps(data, ensure_ascii=False, indent=2), "utf-8"
     )
     return {"session_id": sid}
@@ -460,8 +515,11 @@ async def save_session(request: Request):
 @app.get("/api/sessions")
 async def list_sessions(full: bool = False):
     sessions = []
-    for f in sorted(SESSIONS_DIR.glob("*.json"), reverse=True):
-        d = json.loads(f.read_text("utf-8"))
+    for f in _all_session_jsons():
+        try:
+            d = json.loads(f.read_text("utf-8"))
+        except Exception:
+            continue
         if full:
             d["session_id"] = f.stem
             sessions.append(d)
@@ -479,8 +537,8 @@ async def list_sessions(full: bool = False):
 
 @app.get("/api/sessions/{session_id}")
 async def get_session(session_id: str):
-    path = SESSIONS_DIR / f"{session_id}.json"
-    if not path.exists():
+    path = _find_session_file(session_id)
+    if not path:
         raise HTTPException(404, "Session not found")
     d = json.loads(path.read_text("utf-8"))
     d["session_id"] = session_id
@@ -533,7 +591,7 @@ async def get_stats():
     all_bands: list[dict] = []
     session_dates: list[str] = []
 
-    for f in SESSIONS_DIR.glob("*.json"):
+    for f in _all_session_jsons():
         try:
             d = json.loads(f.read_text("utf-8"))
         except Exception:
@@ -586,7 +644,7 @@ async def get_stats():
 
     return {
         "streak": streak,
-        "total_sessions": len(list(SESSIONS_DIR.glob("*.json"))),
+        "total_sessions": len(_all_session_jsons()),
         "total_analyses": len(all_bands),
         "weakness": weakness,
     }
@@ -597,8 +655,8 @@ async def get_stats():
 # ---------------------------------------------------------------------------
 @app.get("/api/sessions/{session_id}/pdf")
 async def export_session_pdf(session_id: str):
-    path = SESSIONS_DIR / f"{session_id}.json"
-    if not path.exists():
+    path = _find_session_file(session_id)
+    if not path:
         raise HTTPException(404, "Session not found")
 
     d = json.loads(path.read_text("utf-8"))
@@ -761,7 +819,7 @@ async def export_session_pdf(session_id: str):
                     p3_samples[i] if i < len(p3_samples) else "",
                 )
 
-    pdf_path = SESSIONS_DIR / f"{session_id}.pdf"
+    pdf_path = path.with_suffix(".pdf")
     pdf.output(str(pdf_path))
 
     return FileResponse(

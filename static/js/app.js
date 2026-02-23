@@ -711,20 +711,25 @@ async function finishPart1() {
     return;
   }
 
-  await fetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      session_id: state.sessionId,
-      type: 'part1',
-      created_at: new Date().toISOString(),
-      questions: state.part1Questions,
-      sample_answers: state.part1Answers,
-      transcripts: state.part1Transcripts.map((t) => t.transcript),
-      durations: state.part1Transcripts.map((t) => t.duration),
-      analyses: state.part1Transcripts.map((t) => t.analysis || {}),
-    }),
-  }).catch(() => {});
+  try {
+    const saveRes = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        type: 'part1',
+        created_at: new Date().toISOString(),
+        question_ids: state.part1Parsed.map((p) => p.id),
+        questions: state.part1Questions,
+        sample_answers: state.part1Answers,
+        transcripts: state.part1Transcripts.map((t) => t.transcript),
+        durations: state.part1Transcripts.map((t) => t.duration),
+        analyses: state.part1Transcripts.map((t) => t.analysis || {}),
+      }),
+    });
+    const saveData = await saveRes.json();
+    if (saveData.session_id) state.sessionId = saveData.session_id;
+  } catch { /* ignore */ }
 
   renderResults();
 }
@@ -921,11 +926,15 @@ async function savePart2Session() {
     };
   }
 
-  await fetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  }).catch(() => {});
+  try {
+    const saveRes = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const saveData = await saveRes.json();
+    if (saveData.session_id) state.sessionId = saveData.session_id;
+  } catch { /* ignore */ }
 }
 
 async function saveMockSession() {
@@ -961,11 +970,15 @@ async function saveMockSession() {
     };
   }
 
-  await fetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  }).catch(() => {});
+  try {
+    const saveRes = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const saveData = await saveRes.json();
+    if (saveData.session_id) state.sessionId = saveData.session_id;
+  } catch { /* ignore */ }
 
   state.mockMode = false;
 }
@@ -2549,23 +2562,27 @@ async function finishWriting() {
     } catch { /* ignore */ }
   }
 
-  await fetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      session_id: state.sessionId,
-      type: state.writingTask === 'task1' ? 'writing_task1' : 'writing_task2',
-      created_at: new Date().toISOString(),
-      question: state.writingQuestion,
-      question_id: state.writingQuestionId,
-      image_path: state.writingImagePath,
-      brainstorm: state.writingBrainstorm,
-      essay: state.writingEssay,
-      word_count: wordCount,
-      time_spent: elapsed,
-      sample_answer: state.writingSampleAnswer,
-    }),
-  }).catch(() => {});
+  try {
+    const saveRes = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        type: state.writingTask === 'task1' ? 'writing_task1' : 'writing_task2',
+        created_at: new Date().toISOString(),
+        question: state.writingQuestion,
+        question_id: state.writingQuestionId,
+        image_path: state.writingImagePath,
+        brainstorm: state.writingBrainstorm,
+        essay: state.writingEssay,
+        word_count: wordCount,
+        time_spent: elapsed,
+        sample_answer: state.writingSampleAnswer,
+      }),
+    });
+    const saveData = await saveRes.json();
+    if (saveData.session_id) state.sessionId = saveData.session_id;
+  } catch { /* ignore */ }
 
   renderWritingResults(wordCount, elapsed);
 }
