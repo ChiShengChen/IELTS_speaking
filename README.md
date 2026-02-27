@@ -228,6 +228,16 @@ tts_audio/
 
 可將 `tts_audio/` 資料夾匯入手機音樂 App 或直接在 Finder 播放。
 
+語音合成引擎為 **Microsoft Azure Neural TTS**，透過 `edge-tts` 套件免費呼叫（走 Edge 瀏覽器「大聲朗讀」的 WebSocket 端點，無需 API key 或付費）。各分類使用的聲音模型：
+
+| 分類 | Voice Model | 口音 |
+| :--- | :--- | :--- |
+| Speaking P2 | `en-GB-SoniaNeural` | 🇬🇧 英式女聲 |
+| Speaking P3 | `en-US-AvaNeural` | 🇺🇸 美式女聲 |
+| Writing Task 1 & 2 | `en-GB-SoniaNeural` | 🇬🇧 英式女聲 |
+
+如需更高品質語音，可修改 `generate_tts.py` 中的 `VOICES` 設定切換其他聲音，或改用 OpenAI TTS（整個題庫約 $0.6）。
+
 ## 語音分析指標說明
 
 | 指標 | 說明 | 理想範圍 |
