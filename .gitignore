@@ -1,0 +1,10 @@
+# TTS 語音檔
+tts_audio/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# macOS
+.DS_Store

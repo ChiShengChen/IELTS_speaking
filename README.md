@@ -25,6 +25,7 @@
 - **Writing Task 2 練習**：從 `writing_task2.md` 載入題目，提供兩階段計時練習（10 分鐘中文發想 + 30 分鐘英文寫作），即時字數統計（目標 250 字），支援範例答案對照與 Claude 分析匯出。
 - **寫作中文發想階段**：參考 IELTS 寫作架構（P1 背景/立場、P2 主論點、P3 反駁、P4 總結），以中文快速規劃作文邏輯，筆記在英文寫作階段持續顯示。
 - **寫作已抽題追蹤**：Task 1 與 Task 2 分別記錄已練習過的題目（`drawn_writing_task1.json` / `drawn_writing_task2.json`），避免重複抽取。
+- **TTS 語音檔產生**：一鍵將 Speaking P2/P3 範例答案與 Writing Task 1/2 範文批量轉成自然語音 MP3（`generate_tts.py`），支援英式／美式口音切換，方便通勤或日常反覆聆聽，內化高分表達。
 
 ## 題庫內容
 
@@ -40,6 +41,7 @@
 | `writing_task1.md` | Writing Task 1 題目 + 範例答案（含圖片引用） | 自行填入 |
 | `writing_task2.md` | Writing Task 2 題目 + 範例答案 | 自行填入 |
 | `writing_task1_images/` | Task 1 圖片資料夾（對應 md 中的 `![](writing_task1_images/xxx.png)`） | 自行放入 |
+| `tts_audio/` | TTS 語音檔輸出資料夾（由 `generate_tts.py` 產生） | 237 個 MP3 |
 
 ## 安裝
 
@@ -193,6 +195,39 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 3. **Part 2**：使用 `---` 分隔不同的題目卡。
 4. 點選 **Save** 儲存變更。
 
+### TTS 語音檔產生
+
+將題庫中的 Band 7 範例答案批量轉成自然語音 MP3，方便離線反覆聆聽：
+
+```bash
+# 安裝 TTS 套件（首次執行）
+pip install edge-tts
+
+# 產生全部語音檔（約 237 個 MP3，共 ~100MB）
+python generate_tts.py
+
+# 只產生特定分類
+python generate_tts.py speaking_p2
+python generate_tts.py writing_task1 writing_task2
+
+# 預覽模式（不實際產生檔案）
+python generate_tts.py --dry-run
+```
+
+產生的音檔結構：
+
+```text
+tts_audio/
+├── speaking_p2/    51 個 MP3   🇬🇧 英式口音 (en-GB-SoniaNeural)
+├── speaking_p3/   153 個 MP3   🇺🇸 美式口音 (en-US-AvaNeural)
+├── writing_task1/  13 個 MP3   🇬🇧 英式口音 (en-GB-SoniaNeural)
+└── writing_task2/  20 個 MP3   🇬🇧 英式口音 (en-GB-SoniaNeural)
+```
+
+每個音檔內容：先唸題目，自然停頓後唸 Band 7 範例答案（語速 -5%，方便聽清）。Writing Task 2 會自動跳過中文發想大綱，只轉英文範文。
+
+可將 `tts_audio/` 資料夾匯入手機音樂 App 或直接在 Finder 播放。
+
 ## 語音分析指標說明
 
 | 指標 | 說明 | 理想範圍 |
@@ -237,6 +272,7 @@ uvicorn app:app --host 127.0.0.1 --port 8000
 ```text
 IELTS_record_ASR/
 ├── app.py                          # FastAPI 後端 + Whisper ASR + 語音分析 + 分數估算 + PDF 匯出
+├── generate_tts.py                 # TTS 語音檔批量產生腳本（edge-tts）
 ├── requirements.txt
 ├── README.md
 ├── topic_vocab.json                # 主題詞彙建議（51 主題 × 10-15 Band 7+ 詞彙）
@@ -258,6 +294,11 @@ IELTS_record_ASR/
 ├── drawn_writing_task2.json        # Writing Task 2 已抽題紀錄
 ├── recordings/                     # 錄音檔（按 session 分資料夾）
 ├── sessions/                       # 練習記錄 JSON（含轉寫、分析、分數）
+├── tts_audio/                      # TTS 語音檔（由 generate_tts.py 產生）
+│   ├── speaking_p2/               # Part 2 範例答案語音（英式）
+│   ├── speaking_p3/               # Part 3 範例答案語音（美式）
+│   ├── writing_task1/             # Task 1 範文語音（英式）
+│   └── writing_task2/             # Task 2 範文語音（英式）
 └── static/
     ├── index.html                  # SPA 主頁面
     ├── css/style.css               # 暗色主題樣式
@@ -265,7 +306,6 @@ IELTS_record_ASR/
         ├── app.js                  # 主邏輯 + Markdown 解析 + 題目自動載入
         ├── recorder.js             # MediaRecorder 封裝
         └── timer.js                # SVG 圓環計時器
-```
 
 ## 注意事項
 
